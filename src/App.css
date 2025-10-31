@@ -1,0 +1,471 @@
+/* src/App.css */
+
+/* ============ VARIABLES DE COULEUR "NUIT DE MATCH" ============ */
+:root {
+  --primary: #ff6b35;
+  --primary-dark: #e55100;
+  --secondary: #764ba2;
+  --background-dark: #1a202c;
+  --surface-dark: #2d3748;
+  --text-primary: #ffffff;
+  --text-secondary: #a0aec0;
+  --border-color: #4a5568;
+  --success: #2ecc71;
+  --danger: #e74c3c;
+  --warning: #f39c12;
+  --hot: #ff6b35;
+  --warm: #f39c12;
+  --cold: #718096;
+  --border-radius: 12px;
+  --transition: all 0.3s ease;
+}
+
+/* ============ STYLES GLOBAUX ============ */
+.loading,
+.no-data {
+  text-align: center;
+  padding: 50px 20px;
+  color: var(--text-secondary);
+  font-size: 1.2em;
+  background: var(--surface-dark);
+  border-radius: var(--border-radius);
+}
+
+/* ============ CONTENEUR PRINCIPAL ============ */
+.app-container {
+  max-width: 1880px;
+  width: 99%;
+  margin: 0 auto;
+}
+
+/* ============ NAVBAR ============ */
+.app-navbar {
+  background: var(--surface-dark);
+  color: var(--text-primary);
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid var(--border-color);
+  margin-bottom: 30px;
+  border-radius: var(--border-radius);
+}
+.navbar-left {
+  display: flex;
+  align-items: center;
+}
+.navbar-logo {
+  margin: 0;
+  font-size: 1.5em;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.navbar-right {
+  display: flex;
+  gap: 12px;
+}
+.navbar-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  border: 2px solid var(--border-color);
+  padding: 10px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9em;
+  transition: var(--transition);
+}
+.navbar-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: var(--primary);
+  transform: translateY(-2px);
+}
+.admin-link {
+  background-color: var(--secondary) !important;
+  border-color: var(--secondary) !important;
+}
+
+/* === STYLES PARTAGÉS (Cartes, Titres...) === */
+.list-title {
+  font-size: 1.5em;
+  font-weight: 700;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.card {
+  background: var(--surface-dark);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  padding: 20px;
+  transition: var(--transition);
+}
+
+.card:hover {
+  border-color: var(--primary);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* === STYLES PARTAGÉS POUR LES FORMULAIRES (Admin) === */
+.add-match-form-container,
+.add-poll-form-container {
+  background: var(--surface-dark);
+  padding: 25px;
+  border-radius: var(--border-radius);
+  border-left: 4px solid var(--primary);
+  margin-top: 30px;
+}
+
+.add-match-form-container h2,
+.add-poll-form-container h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+.add-match-form-container form,
+.add-poll-form-container form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.add-match-form-container input,
+.add-match-form-container select,
+.add-poll-form-container input {
+  padding: 12px;
+  background: var(--background-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 1em;
+}
+
+.add-match-form-container button[type="submit"],
+.btn-submit-poll {
+  padding: 12px;
+  background: var(--primary);
+  color: var(--text-primary);
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.add-match-form-container button[type="submit"]:hover,
+.btn-submit-poll:hover {
+  background: var(--primary-dark);
+}
+
+.btn-add-option {
+  padding: 10px;
+  background: transparent;
+  border: 1px dashed var(--border-color);
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 8px;
+}
+.btn-add-option:hover {
+  background: var(--background-dark);
+  color: var(--text-primary);
+}
+
+/* Styles pour les modales UserStats et Leaderboard, qui sont déjà OK */
+/* ... (le reste du fichier App.css ne change pas) ... */
+
+/* ============ MODALS (UserStats & Leaderboard) ============ */
+.user-stats-modal-overlay,
+.leaderboard-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+.user-stats-modal,
+.leaderboard-modal {
+  background: var(--surface-dark);
+  color: var(--text-primary);
+  border-radius: var(--border-radius);
+  padding: 30px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border: 2px solid var(--border-color);
+}
+.user-stats-header,
+.leaderboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 16px;
+}
+.user-stats-header h2,
+.leaderboard-header h2 {
+  margin: 0;
+  font-size: 1.5em;
+  color: var(--text-primary);
+}
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5em;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: var(--transition);
+}
+.close-btn:hover {
+  color: var(--text-primary);
+  transform: rotate(90deg);
+}
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  margin-bottom: 15px;
+}
+.stats-row:last-of-type {
+  grid-template-columns: repeat(2, 1fr);
+}
+.stat-card {
+  background: #3c4a60;
+  padding: 20px;
+  border-radius: var(--border-radius);
+  text-align: center;
+  border: 2px solid var(--border-color);
+  transition: var(--transition);
+}
+.stat-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--secondary);
+}
+.stat-icon {
+  font-size: 2em;
+  margin-bottom: 10px;
+}
+.stat-value {
+  font-size: 1.8em;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.stat-label {
+  font-size: 0.9em;
+  color: var(--text-secondary);
+}
+.badges-section,
+.progression-section {
+  margin-top: 30px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 20px;
+  border-radius: var(--border-radius);
+  border-left: 4px solid var(--primary);
+}
+.badges-section h3,
+.progression-section h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+.badges-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+}
+.badge-item {
+  padding: 15px;
+  border-radius: 8px;
+  border: 2px solid;
+  text-align: center;
+}
+.badge-name {
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+.badge-desc {
+  font-size: 0.85em;
+  color: var(--text-secondary);
+}
+.no-badges {
+  color: var(--text-secondary);
+}
+.progression-item {
+  margin-bottom: 15px;
+}
+.progression-item span {
+  display: block;
+  margin-bottom: 8px;
+}
+.progress-bar {
+  height: 10px;
+  background: #3c4a60;
+  border-radius: 5px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--primary);
+  border-radius: 5px;
+  transition: width 0.5s ease;
+}
+.progress-text {
+  text-align: right;
+  font-size: 0.9em;
+  margin-top: 5px;
+  color: var(--text-secondary);
+}
+
+/* ============ STYLES PARTAGÉS (pour les composants) ============ */
+.list-title {
+  font-size: 1.5em;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* ... (Ajoutez ici d'autres styles vraiment globaux si nécessaire) ... */
+/* Styles pour le formulaire d'ajout de sondage (réutilise les styles existants) */
+.add-poll-form-container {
+  background: var(--surface-dark);
+  padding: 25px;
+  border-radius: var(--border-radius);
+  border-left: 4px solid var(--secondary); /* On change la couleur pour différencier */
+  margin-top: 20px;
+}
+
+.add-poll-form-container form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.poll-options-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.btn-add-option,
+.btn-submit-poll {
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: var(--transition);
+}
+
+.btn-add-option {
+  background: transparent;
+  border: 1px dashed var(--border-color);
+  color: var(--text-secondary);
+}
+.btn-add-option:hover {
+  background: var(--background-dark);
+  color: var(--text-primary);
+}
+
+.btn-submit-poll {
+  background: var(--secondary);
+  color: var(--text-primary);
+  border: none;
+}
+.btn-submit-poll:hover {
+  background: #5c3a7e; /* Un peu plus sombre */
+}
+
+.admin-section {
+  margin-top: 40px;
+}
+
+.match-selector {
+  width: 100%;
+  padding: 12px;
+  background: var(--background-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 1em;
+  margin-bottom: 20px;
+}
+/* 👇 STYLE POUR LE NOUVEAU BOUTON RETOUR DANS LA NAVBAR 👇 */
+.navbar-left {
+  gap: 15px; /* On ajoute un peu d'espace entre le bouton et le logo */
+}
+
+.navbar-btn-back {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  border: 2px solid var(--border-color);
+  /* On le rend rond et propre */
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1.5em; /* Pour que la flèche soit bien visible */
+  transition: var(--transition);
+  /* Pour centrer la flèche parfaitement */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 1; /* Aligne la flèche verticalement */
+}
+
+.navbar-btn-back:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+  transform: translateX(-3px);
+}
+
+/* ============ STYLES POUR LA GESTION DES MATCHS (ADMIN) ============ */
+.admin-match-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.admin-match-item {
+  background: var(--background-dark);
+  padding: 15px 20px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid var(--border-color);
+}
+
+.admin-match-item span {
+  font-weight: 600;
+}
+
+.btn-delete-match {
+  background-color: var(--danger);
+  color: var(--text-primary);
+  border: none;
+  padding: 8px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-delete-match:hover {
+  background-color: #c0392b; /* Un rouge plus sombre */
+  transform: scale(1.05);
+}

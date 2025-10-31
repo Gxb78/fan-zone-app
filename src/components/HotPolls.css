@@ -1,0 +1,61 @@
+/* src/components/HotPolls.css */
+.hot-polls-container .list-title {
+  font-size: 1.2em; /* On ajuste la taille pour les sidebars */
+}
+.hot-polls-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+.hot-poll-card {
+  background: var(--surface-dark);
+  padding: 15px; /* On garde le padding ici */
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: var(--transition);
+  /* On retire le overflow: hidden si jamais il y en avait un */
+}
+
+/* 👇 On ajoute la transition à l'élément intérieur */
+.hot-poll-card-inner {
+  transition: var(--transition);
+}
+
+.hot-poll-card:hover {
+  border-color: var(--primary);
+  /* On ne met plus de transform ici ! */
+  box-shadow: 0 0 15px rgba(255, 107, 53, 0.3); /* <-- LA MAGIE EST LÀ */
+}
+
+/* On supprime la règle qui ciblait .hot-poll-card-inner */
+.hot-poll-card:hover .hot-poll-card-inner {
+  /* SUPPRIME TOUT CE BLOC */
+}
+.poll-context {
+  font-size: 0.8em;
+  color: var(--text-secondary);
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+.hot-poll-title {
+  margin: 0 0 10px 0;
+  font-size: 1em;
+  color: var(--text-primary);
+}
+.hot-poll-options.simple {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 10px 0;
+  font-size: 0.9em;
+}
+.hot-poll-options.simple li {
+  padding: 4px 0;
+  color: var(--text-secondary);
+}
+.total-votes {
+  font-size: 0.8em;
+  font-weight: 600;
+  text-align: right;
+  color: var(--primary);
+}

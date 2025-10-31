@@ -1,0 +1,29 @@
+/* src/components/HotComments.css */
+.hot-comments-container .list-title {
+    font-size: 1.2em;
+}
+.hot-comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+.hot-comment-card {
+    background: var(--surface-dark);
+    padding: 15px;
+    border-radius: var(--border-radius);
+    border-left: 3px solid var(--secondary);
+}
+.comment-text {
+    margin: 0 0 10px 0;
+    font-style: italic;
+    color: var(--text-secondary);
+}
+.comment-author {
+    font-size: 0.9em;
+    font-weight: 600;
+    text-align: right;
+}
+.comment-author span {
+    font-weight: 400;
+    color: var(--text-secondary);
+}

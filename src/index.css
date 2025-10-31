@@ -1,0 +1,19 @@
+body {
+  margin: 0;
+  /* On définit nos polices comme avant */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* 👇 LA MAGIE OPÈRE ICI ! 👇 */
+  /* On crée notre ambiance "Nuit de Match" avec un dégradé sombre et stylé */
+  background: linear-gradient(135deg, #1a202c 0%, #2c1a4d 100%);
+  color: #ecf0f1; /* On passe le texte global en clair pour le contraste */
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+}

@@ -1,0 +1,142 @@
+/* src/components/Chat.css */
+
+.chat-container {
+  background-color: var(--surface-dark);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  height: 100%; /* Important pour que le layout flex fonctionne */
+}
+
+.chat-header {
+  padding: 15px;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0; /* On s'assure qu'il ne se compresse pas */
+}
+.chat-header h2 {
+  margin: 0;
+  font-size: 1.2em;
+}
+
+.messages-list {
+  flex-grow: 1; /* Le plus important : la liste prend TOUTE la place dispo */
+  overflow-y: auto; /* Active le scroll si les messages dépassent */
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* Un peu d'espace entre les bulles */
+}
+
+.no-messages {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.message-item {
+  display: flex;
+  flex-direction: column;
+  max-width: 85%; /* Les messages ne prendront jamais toute la largeur */
+}
+
+/* 👇 LA CORRECTION DU TEXTE EST ICI 👇 */
+.message-author {
+  font-size: 0.8em;
+  color: var(--text-secondary);
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.message-author strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.message-time {
+  margin-left: auto; /* Pousse le timestamp tout à droite */
+}
+
+/* 👇 LA CORRECTION DES ANGLES EST ICI 👇 */
+.message-bubble {
+  padding: 10px 15px;
+  border-radius: 18px; /* On augmente pour un effet "pilule" */
+  width: fit-content; /* La bulle s'adapte à la taille du texte */
+}
+
+.quoted-message {
+  border-left: 3px solid var(--secondary);
+  padding-left: 10px;
+  margin-bottom: 8px;
+  font-size: 0.9em;
+  font-style: italic;
+  opacity: 0.8;
+}
+
+/* --- MESSAGES REÇUS (CEUX DES AUTRES) --- */
+.message-item.received {
+  align-self: flex-start;
+  /* 👇 On s'assure que le contenu DANS le bloc est aussi à gauche */
+  align-items: flex-start;
+}
+.message-item.received .message-bubble {
+  background-color: #3c4a60;
+  border-top-left-radius: 4px; /* L'angle "cassé" qui donne du style */
+}
+
+/* --- MESSAGES ENVOYÉS (LES TIENS) --- */
+.message-item.sent {
+  align-self: flex-end;
+  /* 👇 LA CORRECTION MAGIQUE EST ICI ! On aligne le contenu DANS le bloc à droite */
+  align-items: flex-end;
+}
+.message-item.sent .message-author {
+  justify-content: flex-end;
+}
+.message-item.sent .message-bubble {
+  background-color: var(--primary);
+  color: var(--text-primary);
+  border-top-right-radius: 4px; /* L'angle "cassé" de l'autre côté */
+}
+
+.user-pronostic-badge {
+  background-color: rgba(0, 0, 0, 0.25);
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-size: 0.8em;
+  font-weight: 600;
+}
+
+/* --- FORMULAIRE D'ENVOI --- */
+.chat-form {
+  padding: 15px;
+  border-top: 1px solid var(--border-color);
+  background-color: var(--background-dark);
+  flex-shrink: 0;
+}
+
+.chat-input-wrapper {
+  display: flex;
+  gap: 10px;
+}
+.chat-input-wrapper input {
+  flex-grow: 1;
+  padding: 12px 18px;
+  background: var(--surface-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 20px; /* Pour un look moderne */
+  color: var(--text-primary);
+  font-size: 1em;
+}
+.chat-input-wrapper button {
+  padding: 0 20px;
+  background: var(--primary);
+  border: none;
+  border-radius: 20px;
+  color: var(--text-primary);
+  font-weight: 700;
+  cursor: pointer;
+}

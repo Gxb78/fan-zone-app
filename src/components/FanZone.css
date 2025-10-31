@@ -1,0 +1,181 @@
+/* src/components/FanZone.css */
+
+.fan-zone-page-container {
+  max-width: 1600px;
+  width: 95%;
+  margin: 0 auto;
+}
+.fan-zone-layout {
+  display: flex; /* On utilise flexbox pour aligner les deux colonnes */
+  gap: 25px;
+  align-items: flex-start; /* Pour que les colonnes commencent bien en haut */
+}
+
+.fan-zone-main {
+  flex: 1; /* La colonne principale prend toute la place restante */
+  min-width: 0;
+}
+
+.fan-zone-chat {
+  width: 380px; /* On lui donne une largeur fixe */
+  flex-shrink: 0; /* TRÈS IMPORTANT: On l'empêche de se rétrécir */
+  position: sticky; /* Pour qu'il reste visible quand on scrolle */
+  top: 20px;
+  /* On lui donne une hauteur maximale pour que le scroll se fasse à l'intérieur */
+  height: calc(100vh - 120px);
+}
+
+.match-view-header {
+  background: var(--surface-dark);
+  padding: 20px;
+  border-radius: var(--border-radius);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  border: 2px solid var(--border-color);
+}
+
+#btn-back {
+  background: var(--primary);
+  color: var(--text-primary);
+  border: none;
+  padding: 12px 24px;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-weight: 600;
+  transition: var(--transition);
+}
+
+#btn-back:hover {
+  background: var(--primary-dark);
+  transform: translateX(-2px);
+}
+
+/* Responsive pour la FanZone */
+@media (max-width: 1200px) {
+  .fan-zone-layout {
+    flex-direction: column;
+  }
+  .fan-zone-chat {
+    width: 100%;
+    position: static;
+    margin-top: 20px;
+    height: 60vh;
+  }
+}
+/* 👇 STYLES POUR LA BANNIÈRE "FEAR OF MISSING OUT" */
+.fomo-banner {
+  background: linear-gradient(90deg, var(--secondary) 0%, var(--primary) 100%);
+  border-radius: var(--border-radius);
+  margin-bottom: 25px;
+  padding: 3px; /* Crée un effet de bordure avec le dégradé */
+}
+
+.fomo-content {
+  background-color: var(--surface-dark);
+  padding: 20px;
+  border-radius: 10px; /* Un peu moins que le parent pour voir la bordure */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.fomo-icon {
+  font-size: 2.5em;
+  margin-right: 20px;
+}
+
+.fomo-text {
+  flex-grow: 1;
+}
+
+.fomo-title {
+  font-size: 1.3em;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.fomo-subtitle {
+  color: var(--text-secondary);
+}
+
+.live-users {
+  font-size: 1.1em;
+  font-weight: 700;
+  color: var(--text-primary);
+  background-color: var(--background-dark);
+  padding: 8px 16px;
+  border-radius: 20px;
+}
+/* 👇 STYLES POUR LES AUTRES DÉBATS 👇 */
+.other-polls-container {
+  margin-top: 30px;
+}
+
+.other-polls-title {
+  font-size: 1.5em;
+  font-weight: 700;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.other-polls-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.other-poll-card {
+  background: var(--surface-dark);
+  padding: 20px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  transition: var(--transition);
+  cursor: pointer;
+}
+
+.other-poll-card:hover {
+  border-color: var(--primary);
+  transform: translateY(-3px);
+}
+
+.other-poll-card h4 {
+  margin: 0 0 10px 0;
+  font-size: 1.2em;
+}
+
+.other-poll-card p {
+  margin: 0;
+  font-style: italic;
+  color: var(--text-secondary);
+  font-size: 0.9em;
+}
+.match-view-header {
+  background: var(--surface-dark);
+  padding: 20px;
+  border-radius: var(--border-radius);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  border: 2px solid var(--border-color);
+}
+
+#btn-back {
+  background: var(--primary);
+  color: var(--text-primary);
+  border: none;
+  padding: 12px 24px;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-weight: 600;
+  transition: var(--transition);
+}
+
+#btn-back:hover {
+  background: var(--primary-dark);
+  transform: translateX(-2px);
+}

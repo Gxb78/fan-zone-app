@@ -1,0 +1,117 @@
+/* src/components/FeaturedMatch.css */
+
+.featured-match-container {
+  background-color: var(--surface-dark);
+  border-radius: var(--border-radius);
+  margin-bottom: 30px;
+  overflow: hidden; /* Important de le garder ici pour les coins arrondis */
+  cursor: pointer;
+  border: 1px solid var(--border-color);
+  transition: var(--transition);
+}
+
+.featured-match-container:hover {
+  border-color: var(--primary);
+  /* On ne met plus de scale ici ! */
+}
+
+/* 👇 On ajoute la transition à l'élément intérieur */
+.featured-match-inner {
+    transition: var(--transition);
+}
+
+/* 👇 Et on lui applique le scale au survol du parent */
+.featured-match-container:hover .featured-match-inner {
+    transform: scale(1.02);
+}
+
+.featured-header {
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--background-dark);
+}
+
+.featured-header h2 {
+  margin: 0;
+  font-size: 1.2em;
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.live-badge {
+  background: var(--hot);
+  padding: 6px 12px;
+  border-radius: 15px;
+  font-size: 0.9em;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.featured-body {
+  height: 250px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 20px;
+}
+
+/* L'overlay sombre pour la lisibilité, c'est la touche pro ! */
+.featured-body::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 1;
+}
+
+.team-featured, .match-info-featured {
+  position: relative;
+  z-index: 2;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.team-featured {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  width: 150px;
+}
+
+.team-featured img {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+}
+
+.team-featured span {
+  font-size: 1.5em;
+  font-weight: 700;
+}
+
+.vs-featured {
+  font-size: 2.5em;
+  font-weight: 900;
+}
+
+.time-featured {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin: 10px 0;
+  font-weight: 600;
+}
+
+.competition-featured {
+  font-size: 1em;
+  color: var(--text-secondary);
+}
