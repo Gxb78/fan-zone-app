@@ -2,6 +2,7 @@
 
 // Affiche "il y a 2min", etc. à partir d'un timestamp
 export function timeAgo(timestamp) {
+  // ... (cette partie ne change pas)
   const now = Date.now();
   const diff = now - timestamp;
   const minutes = Math.floor(diff / 60000);
@@ -14,7 +15,7 @@ export function timeAgo(timestamp) {
   return `il y a ${days}j`;
 }
 
-// Score d'engagement d'un sondage (votes, diversité, activité récente)
+// ... (les autres helpers comme calculateHeatScore, etc. ne changent pas)
 export function calculateHeatScore(data) {
   if (!data) return 0;
   const votes = data.votes || {};
@@ -45,23 +46,17 @@ export function calculateHeatScore(data) {
     recencyScore * 0.1;
   return Math.round(heatScore);
 }
-
-// Emoji selon le heatScore
 export function getHeatEmoji(score) {
   if (score >= 80) return "🔥🔥🔥 EN FEU";
   if (score >= 60) return "🔥🔥 CHAUD";
   if (score >= 40) return "🔥 DÉBAT";
   return "❄️ FROID";
 }
-
-// Classe CSS pour le heatScore
 export function getHeatClass(score) {
   if (score >= 70) return "hot";
   if (score >= 40) return "warm";
   return "cold";
 }
-
-// Détecte si l'opinion est controversée (<30% des votes sur une option)
 export function isControversialOpinion(votes, chosenOption) {
   const totalVotes = Object.values(votes).reduce((sum, val) => sum + val, 0);
   if (totalVotes === 0) return false;
@@ -70,58 +65,58 @@ export function isControversialOpinion(votes, chosenOption) {
   return percentage < 30;
 }
 
-// ============== NOUVELLES FONCTIONS DE STATUT DE MATCH ==============
+// ============== 👇 NOUVELLES FONCTIONS CORRIGÉES 👇 ==============
 
-// Affiche la date exacte (incluant la correction d'une heure locale demandée)
+// Affiche la date et l'heure en utilisant la timezone de Paris (beaucoup plus fiable !)
 export function formatMatchDate(dateString) {
   if (!dateString) return "Date inconnue";
-
   const date = new Date(dateString);
 
-  // FIX TIMEZONE : On ajoute 1 heure UTC pour le décalage souhaité (+1h).
-  date.setUTCHours(date.getUTCHours() + 1);
-
-  // Formatage: JJ/MM/AAAA à HH:MM
-  const datePart = date.toLocaleDateString("fr-FR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-  const timePart = date.toLocaleTimeString("fr-FR", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
-
-  return `${datePart} à ${timePart}`;
+  // ✅ La solution PRO de l'audit : on laisse le navigateur gérer la timezone.
+  return new Intl.DateTimeFormat("fr-FR", {
+    dateStyle: "short",
+    timeStyle: "short",
+    timeZone: "Europe/Paris",
+  }).format(date);
 }
 
-// Affiche le score, la minute ou la date selon le statut
+// Affiche le score, la minute ou la date selon le statut (version blindée)
 export function getMatchTimeStatus(match) {
   const { status, scoreA, scoreB, liveMinute, date } = match || {};
 
   // Statut FINISHED
   if (status === "FINISHED") {
-    // Affiche le score final
-    const finalScore =
-      scoreA != null && scoreB != null ? `${scoreA} - ${scoreB}` : "Terminé";
+    // On utilise '??' pour afficher "-" si le score est null ou undefined
+    const finalScore = `${scoreA ?? "-"} - ${scoreB ?? "-"}`;
     return `Terminé : ${finalScore}`;
   }
 
   // Statut LIVE
   if (status === "LIVE") {
-    // Affiche le score en direct et la minute/période
-    const score =
-      scoreA != null && scoreB != null ? `${scoreA} - ${scoreB}` : "En Direct";
-    const minute = liveMinute ? liveMinute : "LIVE";
+    const score = `${scoreA ?? "-"} - ${scoreB ?? "-"}`;
+    const minute = liveMinute || "LIVE";
     return `${score} | ${minute}`;
   }
 
-  // Statut SCHEDULED (Foot/Basket programmé)
+  // Statut SCHEDULED (programmé) ou n'importe quel autre cas
   if (date) {
     return formatMatchDate(date);
   }
 
-  // Fallback
-  return match?.time || "Date inconnue";
+  // Fallback ultime si aucune date n'est fournie
+  return match?.time || "À venir";
+}
+// Ajoute cette fonction à la fin de src/utils/helpers.js
+
+export function calculateCommentHeatScore(comment) {
+  const likes = comment.likes || 0;
+
+  // On calcule le total des réactions emoji
+  const totalReactions = Object.values(comment.reactions || {}).reduce(
+    (sum, count) => sum + count,
+    0
+  );
+
+  // On donne plus de poids aux réactions qu'aux simples likes
+  return likes + totalReactions * 2;
 }

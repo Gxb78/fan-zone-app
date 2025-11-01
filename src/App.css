@@ -2,20 +2,26 @@
 
 /* ============ VARIABLES DE COULEUR "NUIT DE MATCH" ============ */
 :root {
-  --primary: #ff6b35;
-  --primary-dark: #e55100;
-  --secondary: #764ba2;
-  --background-dark: #1a202c;
-  --surface-dark: #2d3748;
+  --primary: #ff6b35; /* Orange Action : pour tout ce qui est cliquable et important */
+  --primary-dark: #e55100; /* Variante pour le survol (hover) */
+  --secondary: #764ba2; /* Violet Spécial : pour les badges, les éléments rares */
+
+  --background-dark: #1a202c; /* Fond principal (déjà bon) */
+  --surface-dark: #2d3748; /* Fond des cartes (déjà bon) */
+  --border-color: #4a5568; /* Bordures (déjà bon) */
+
   --text-primary: #ffffff;
   --text-secondary: #a0aec0;
-  --border-color: #4a5568;
+
+  /* On garde ces couleurs pour des notifications, mais pas pour l'UI générale */
   --success: #2ecc71;
   --danger: #e74c3c;
   --warning: #f39c12;
-  --hot: #ff6b35;
+
+  --hot: #ff6b35; /* Le "chaud" sera maintenant notre couleur primaire */
   --warm: #f39c12;
   --cold: #718096;
+
   --border-radius: 12px;
   --transition: all 0.3s ease;
 }
@@ -92,7 +98,17 @@
   margin-bottom: 20px;
   padding-bottom: 10px;
   border-bottom: 2px solid var(--border-color);
-  color: var(--text-primary);
+
+  /* ✅ La magie du gradient sur le texte */
+  background: linear-gradient(
+    90deg,
+    var(--text-primary),
+    var(--text-secondary)
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
 }
 
 .card {

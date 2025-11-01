@@ -1,9 +1,14 @@
 // src/components/Chat.jsx
 import React, { useState, useEffect, useRef } from "react";
-import { sendMessage, getCurrentUser } from "../services/firebase";
+import {
+  sendMessage,
+  getCurrentUser,
+  addReactionToMessage,
+} from "../services/firebase";
 import db from "../services/firebase";
 import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
 import { timeAgo } from "../utils/helpers";
+import MessageReactions from "./MessageReactions"; // On importe notre nouveau composant
 import "./Chat.css";
 
 const Chat = ({
@@ -20,10 +25,12 @@ const Chat = ({
   const user = getCurrentUser();
   const messagesEndRef = useRef(null);
 
+  // Fait défiler le chat vers le bas quand un nouveau message arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // S'abonne aux messages du chat en temps réel
   useEffect(() => {
     if (!matchId || !chatId) return;
 
@@ -38,23 +45,32 @@ const Chat = ({
     return () => unsubscribe();
   }, [matchId, chatId]);
 
+  // Fonction pour envoyer un nouveau message
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (newMessage.trim() === "" || !user || isSending) return; // Sécurité supplémentaire
+    if (newMessage.trim() === "" || !user || isSending) return;
 
-    // 👇 ON BLOQUE L'ENVOI
     setIsSending(true);
 
     const userVoteKey = featuredPollData?.voters?.[user.uid];
-    const userVoteText = userVoteKey
-      ? featuredPollData.options[userVoteKey]
-      : null;
+    let userVoteText = null;
+
+    if (userVoteKey && Array.isArray(featuredPollData.options)) {
+      const voteOption = featuredPollData.options.find(
+        (opt) => opt.key === userVoteKey
+      );
+      if (voteOption) {
+        userVoteText = voteOption.text;
+      }
+    }
 
     const messageData = {
       text: newMessage,
       userId: user.uid,
       quotedMessage: replyTo ? replyTo.text : null,
       pronostic: userVoteText,
+      // On initialise les réactions pour que le système marche direct
+      reactions: {},
     };
 
     try {
@@ -64,14 +80,25 @@ const Chat = ({
     } catch (error) {
       console.error("Erreur lors de l'envoi du message:", error);
     } finally {
-      // 👇 ON DÉBLOQUE L'ENVOI
       setIsSending(false);
     }
   };
 
+  // Fonction pour ajouter une réaction à un message
+  const handleAddReaction = async (messageId, reactionEmoji) => {
+    try {
+      await addReactionToMessage(matchId, chatId, messageId, reactionEmoji);
+    } catch (error) {
+      console.error("Erreur en ajoutant la réaction:", error);
+    }
+  };
+
+  // Trouve le titre du chat actuel
   const getChatTitle = () => {
     if (chatId === "general") return "Général";
-    const currentPoll = otherPolls.find((p) => p.id === chatId);
+    // On doit vérifier partout où le sondage pourrait être
+    const allPolls = [featuredPollData, ...otherPolls].filter(Boolean);
+    const currentPoll = allPolls.find((p) => p.id === chatId);
     return currentPoll ? currentPoll.title : "Débat";
   };
 
@@ -108,6 +135,13 @@ const Chat = ({
                   )}
                   <div className="message-text">{msg.text}</div>
                 </div>
+                {/* On affiche les boutons de réaction sous chaque message */}
+                <MessageReactions
+                  message={msg}
+                  matchId={matchId}
+                  chatId={chatId}
+                  onAddReaction={handleAddReaction}
+                />
               </div>
             );
           })
@@ -115,7 +149,6 @@ const Chat = ({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* 👇 LE FORMULAIRE EST DE RETOUR ! 👇 */}
       <form className="chat-form" onSubmit={handleSendMessage}>
         {replyTo && (
           <div className="reply-preview">
@@ -131,13 +164,13 @@ const Chat = ({
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             placeholder="Ton analyse, ton pronostic..."
-            disabled={isSending} // Désactive aussi l'input pendant l'envoi
+            disabled={isSending}
           />
           <button type="submit" disabled={isSending}>
             {isSending ? "Envoi..." : "Envoyer"}
           </button>
         </div>
-      </form> 
+      </form>
     </div>
   );
 };

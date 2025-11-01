@@ -1,0 +1,89 @@
+/* src/components/LiveCommentaryFeed.css */
+/* Garde exactement le même code que dans mon message précédent, il est déjà parfait pour ça ! */
+/* (celui avec l'animation en cascade .live-comment-card:nth-child) */
+.live-feed-container .list-title {
+  font-size: 1.2em;
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+.live-feed-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.live-comment-card {
+  background: var(--surface-dark);
+  padding: 12px;
+  border-radius: var(--border-radius);
+  border-left: 3px solid var(--secondary);
+  cursor: pointer;
+  transition: var(--transition);
+  opacity: 0;
+  animation: slideIn 0.5s ease-out forwards;
+}
+.live-comment-card:nth-child(1) {
+  animation-delay: 0.1s;
+}
+.live-comment-card:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.live-comment-card:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.live-comment-card:nth-child(4) {
+  animation-delay: 0.4s;
+}
+.live-comment-card:nth-child(5) {
+  animation-delay: 0.5s;
+}
+.live-comment-card:nth-child(6) {
+  animation-delay: 0.6s;
+}
+.live-comment-card:hover {
+  transform: translateX(3px);
+  border-left-color: var(--primary);
+}
+.live-comment-card .comment-text {
+  margin: 0 0 10px 0;
+  font-style: italic;
+  color: var(--text-primary);
+  font-size: 0.9em;
+}
+.live-comment-card .comment-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8em;
+}
+.comment-author {
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+.comment-heat {
+  font-weight: 700;
+  color: var(--primary);
+}
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.comment-team-logo {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  border-radius: 50%;
+  background-color: white;
+  padding: 2px;
+}
+
+.live-comment-card .comment-author {
+  font-weight: 700;
+  color: var(--text-secondary);
+}

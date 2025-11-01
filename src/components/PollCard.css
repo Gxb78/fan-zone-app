@@ -26,31 +26,12 @@
   font-size: 1.4em;
 }
 
-.heat-badge {
-  font-weight: 600;
-  padding: 6px 12px;
-  border-radius: 15px;
-  font-size: 0.8em;
-  color: var(--text-primary);
-}
-.heat-badge.hot {
-  background-color: var(--hot);
-}
-.heat-badge.warm {
-  background-color: var(--warm);
-}
-.heat-badge.cold {
-  background-color: var(--cold);
-}
-
 .polarizing-question {
   font-style: italic;
   color: var(--text-secondary);
 }
 
-/* ANCIEN STYLE POLL OPTION (on le modifie) */
 .poll-options {
-  /* Ajout d'un peu de padding pour les options si nécessaire */
   padding: 20px 20px 0 20px;
 }
 
@@ -58,21 +39,25 @@
   border: 2px solid var(--border-color);
   border-radius: 8px;
   padding: 12px;
-  cursor: pointer;
   transition: var(--transition);
   position: relative;
   overflow: hidden;
   display: flex;
   align-items: center;
-  margin-bottom: 15px; /* Espace entre les options */
-  /* FIX 1: Assure une hauteur minimale stable pour éviter le saut vertical */
+  margin-bottom: 15px;
   min-height: 50px;
 }
 
-.poll-option:hover {
-  border-color: var(--secondary);
+/* Comportement par défaut (pas encore voté) */
+.poll-card.can-vote .poll-option {
+  cursor: pointer;
+}
+.poll-card.can-vote .poll-option:hover {
+  border-color: var(--primary);
+  background-color: rgba(255, 107, 53, 0.1);
 }
 
+/* Barre de progression en fond */
 .option-bar {
   position: absolute;
   top: 0;
@@ -80,16 +65,9 @@
   bottom: 0;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 6px;
-}
-
-.option-fill {
-  height: 100%;
-  background-color: var(--primary);
-  opacity: 0.3;
   transition: width 0.5s ease;
 }
 
-/* 👇 NOUVEAU CONTENEUR POUR LE TEXTE ET LES STATS 👇 */
 .option-content-wrapper {
   position: relative;
   z-index: 2;
@@ -101,7 +79,6 @@
 
 .option-text {
   font-weight: 600;
-  margin-bottom: 0;
 }
 
 .option-stats {
@@ -109,71 +86,58 @@
   align-items: center;
   gap: 10px;
   font-size: 0.9em;
-  /* FIX 2: Assure que l'espace pris par les stats est stable */
   min-width: 100px;
   justify-content: flex-end;
-  flex-shrink: 0; /* Empêche les stats de se compresser */
+  flex-shrink: 0;
 }
 
 .option-votes {
   font-weight: 700;
-  color: var(--primary);
-  /* FIX 3: Force une largeur minimale pour le pourcentage (ex: 45% prend plus de place que 4%) */
+  color: var(--text-secondary);
   min-width: 30px;
   text-align: right;
-  flex-shrink: 0; /* Empêche le pourcentage de se compresser */
+  flex-shrink: 0;
 }
 
 .controversial-badge {
-  background: var(--secondary);
+  background: var(
+    --secondary
+  ); /* Notre couleur spéciale pour les éléments rares */
   color: var(--text-primary);
   padding: 3px 8px;
   border-radius: 10px;
   font-size: 0.8em;
   font-weight: 600;
-  flex-shrink: 0; /* FIX 4: Assure qu'il ne cause pas de débordement ou de compression inattendue */
+  flex-shrink: 0;
 }
 
-/* ... (Section commentaires et CTA existants) ... */
+/* 👇 LA CORRECTION UX EST ICI ! 👇 */
 /* Style pour l'option que l'utilisateur a choisie */
 .poll-option.voted-for {
-  border-color: var(--success);
-  box-shadow: 0 0 15px rgba(46, 204, 113, 0.5);
+  border-color: var(--primary); /* La bordure devient orange */
+  box-shadow: 0 0 15px rgba(255, 107, 53, 0.5);
 }
 
-.poll-option.voted-for .option-fill {
-  background-color: var(
-    --success
-  ); /* On peut changer la couleur de la barre aussi */
+.poll-option.voted-for .option-bar {
+  background-color: var(--primary); /* La barre devient orange plein */
   opacity: 0.4;
 }
 
-/* On change le style du bouton de vote après le vote */
-.btn-vote-poll:disabled {
-  background: var(--success);
+.poll-option.voted-for .option-votes {
+  color: var(--primary); /* Le pourcentage devient orange */
+}
+
+/* On grise les autres options après le vote */
+.poll-card.voted .poll-option:not(.voted-for) {
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
-/* Quand l'utilisateur n'a pas encore voté, on montre que les options sont cliquables */
-.poll-card.can-vote .poll-option {
-  cursor: pointer;
-}
-
-.poll-card.can-vote .poll-option:hover {
-  border-color: var(--primary);
-}
-
-/* Quand l'utilisateur a voté, on grise juste les autres options */
-.poll-card.voted .poll-option:not(.voted-for) {
-  opacity: 0.7; /* On met une opacité légère pour le feedback visuel */
-}
-
-/* Footer avec le bouton d'annulation */
+/* ... le reste du CSS est bon ... */
 .poll-footer {
   padding: 0 20px 20px 20px;
   text-align: center;
 }
-
 .btn-cancel-vote {
   background: none;
   border: none;
@@ -185,13 +149,10 @@
   transition: var(--transition);
   text-decoration: underline;
 }
-
 .btn-cancel-vote:hover {
   background: var(--background-dark);
   color: var(--danger);
 }
-
-/* Style du contexte du match pour le sondage */
 .match-context-header {
   display: flex;
   align-items: center;
@@ -203,12 +164,9 @@
   padding-bottom: 10px;
   border-bottom: 1px solid var(--border-color);
 }
-
 .team-name-poll {
   margin: 0 10px;
-  color: var(--primary);
 }
-
 .vs-separator {
   color: var(--text-secondary);
   font-size: 0.8em;

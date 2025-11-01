@@ -2,74 +2,68 @@
 
 .lobby-final-layout {
   display: grid;
-  grid-template-columns: 320px 1fr 320px; /* Colonne gauche | Colonne centrale | Colonne droite */
+  /* ✅ On revient à notre layout que tu aimais */
+  grid-template-columns: 320px 1fr 320px;
   gap: 25px;
   align-items: flex-start;
 }
 
 .lobby-main-content {
-  min-width: 0; /* Important pour que les éléments flex/grid ne dépassent pas */
+  min-width: 0;
 }
 
 .lobby-sidebar-left,
 .lobby-sidebar-right {
   position: sticky;
   top: 20px;
-  max-height: calc(100vh - 120px);
+  max-height: calc(100vh - 40px); /* Un peu plus d'espace vertical */
   overflow-y: auto;
+  /* On cache la scrollbar pour un look plus clean */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
-
-/* Style de la scrollbar (déjà bon, on garde) */
 .lobby-sidebar-left::-webkit-scrollbar,
 .lobby-sidebar-right::-webkit-scrollbar {
-  width: 8px;
-}
-.lobby-sidebar-left::-webkit-scrollbar-track,
-.lobby-sidebar-right::-webkit-scrollbar-track {
-  background: var(--surface-dark);
-}
-.lobby-sidebar-left::-webkit-scrollbar-thumb,
-.lobby-sidebar-right::-webkit-scrollbar-thumb {
-  background-color: var(--border-color);
-  border-radius: 4px;
-}
-.lobby-sidebar-left::-webkit-scrollbar-thumb:hover,
-.lobby-sidebar-right::-webkit-scrollbar-thumb:hover {
-  background-color: var(--primary);
+  display: none; /* Chrome, Safari and Opera */
 }
 
-/* Responsive */
 @media (max-width: 1200px) {
   .lobby-final-layout {
-    grid-template-columns: 1fr; /* On passe à une seule colonne */
+    grid-template-columns: 1fr;
   }
   .lobby-sidebar-left,
   .lobby-sidebar-right {
-    display: none; /* On cache les sidebars sur mobile/tablette */
+    position: static;
+    max-height: none;
+    overflow-y: visible;
+    margin-top: 30px;
   }
 }
 
-/* === STYLES POUR LA LISTE DES "AUTRES MATCHS" === */
+/* On s'assure que le titre principal n'a pas une marge énorme */
+.lobby-main-content .list-title {
+  margin-top: 40px;
+}
+
+/* ... le reste du fichier est bon ... */
 .match-list-container {
   display: grid;
-  grid-template-columns: 1fr; /* Une colonne pour la liste */
+  grid-template-columns: 1fr;
   gap: 20px;
 }
 .match-card {
   background-color: var(--surface-dark);
   border-radius: var(--border-radius);
-  overflow: hidden; /* On garde l'overflow ici */
+  overflow: hidden;
   cursor: pointer;
   transition: var(--transition);
   border: 1px solid var(--border-color);
 }
-
 .match-card:hover {
   border-color: var(--primary);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-  /* On ne met plus de transform ici */
+  transform: perspective(1000px) rotateX(5deg) scale(1.02);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
 }
-
 .match-header {
   height: 100px;
   background-size: cover;

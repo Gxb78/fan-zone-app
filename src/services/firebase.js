@@ -17,8 +17,13 @@ import {
   getDoc,
   setDoc,
   deleteDoc,
-  limit, // On importe "limit" pour le leaderboard
+  limit,
 } from "firebase/firestore";
+
+// ✅ On importe notre nouvelle IA !
+import { generateRageBaitContent } from "./aiContentGenerator";
+
+import { increment } from "firebase/firestore"; // N'oublie pas d'ajouter "increment" à tes imports en haut !
 
 // ⚡️ Configure ici tes données Firebase projet
 const firebaseConfig = {
@@ -54,78 +59,35 @@ export function getCurrentUser() {
 }
 
 // ===============================================
-// FONCTION UTILITAIRE POUR CRÉER LES SONDAGES
+// FONCTION UTILITAIRE POUR CRÉER LES SONDAGES (via l'IA)
 // ===============================================
 async function addDefaultPollsToMatch(matchData) {
-  let defaultPolls = [];
-  const { teamA, teamB, id: matchId, sportKey } = matchData;
+  // ✅ On utilise notre IA pour générer tout le contenu
+  const { polls } = generateRageBaitContent(matchData);
+  const { id: matchId, teamA, teamB } = matchData;
 
-  // --- Scénario pour le Football ---
-  if (sportKey === "football") {
-    defaultPolls = [
-      {
-        id: "vainqueur_match",
-        title: "Vainqueur du Match",
-        polarizingQuestion: `Qui va remporter le choc entre ${teamA} et ${teamB} ?`,
-        options: { teamA: teamA, draw: "Match Nul", teamB: teamB },
-        // On génère des votes aléatoires mais crédibles
-        seedVotes: {
-          teamA: Math.floor(Math.random() * 2000) + 500,
-          draw: Math.floor(Math.random() * 800) + 200,
-          teamB: Math.floor(Math.random() * 2000) + 400,
-        },
-      },
-      {
-        id: "homme_du_match",
-        title: "Homme du Match",
-        polarizingQuestion: "Le MVP viendra de quelle équipe selon toi ?",
-        options: {
-          joueurA: `Un joueur de ${teamA}`,
-          joueurB: `Un joueur de ${teamB}`,
-        },
-        seedVotes: {
-          joueurA: Math.floor(Math.random() * 1500) + 300,
-          joueurB: Math.floor(Math.random() * 1500) + 300,
-        },
-      },
-    ];
-  }
-  // --- Scénario pour le Basketball ---
-  else if (sportKey === "basketball") {
-    defaultPolls = [
-      {
-        id: "vainqueur_match",
-        title: "Vainqueur du Match",
-        polarizingQuestion: `Qui va dominer le parquet entre ${teamA} et ${teamB} ?`,
-        options: { teamA: teamA, teamB: teamB },
-        seedVotes: {
-          teamA: Math.floor(Math.random() * 2500) + 500,
-          teamB: Math.floor(Math.random() * 2500) + 500,
-        },
-      },
-    ];
-  }
+  if (!polls || polls.length === 0) return;
 
-  if (defaultPolls.length === 0) return;
-
-  // On crée un document pour chaque sondage généré
-  for (const poll of defaultPolls) {
+  // On enregistre les sondages générés dans Firebase
+  for (const poll of polls) {
     const pollRef = doc(db, "matches", String(matchId), "polls", poll.id);
+
+    // On enlève "seedVotes" car il n'est plus généré par notre nouvelle IA,
+    // mais on garde la variable pour éviter tout crash si une ancienne structure traîne.
     const { seedVotes, ...pollData } = poll;
-    const seedComments = generateSeedComments(poll.title, teamA, teamB);
+
     await setDoc(pollRef, {
-      ...pollData,
-      votes: seedVotes || {},
+      ...pollData, // Contient les options et les seedComments
+      votes: {}, // Initialise les votes à zéro
       voters: {},
-      seedComments: seedComments,
     });
   }
   console.log(
-    `🤖 IA: ${defaultPolls.length} débats générés pour le match ${matchId}`
+    `🤖 IA RageBait: ${polls.length} débats générés pour le match ${matchId}`
   );
 
-  // 👇 NOUVEAU : On génère un message pour CHAQUE nouveau chat de sondage
-  for (const poll of defaultPolls) {
+  // On crée les messages d'ouverture de chat pour chaque sondage
+  for (const poll of polls) {
     const pollChatRef = collection(
       db,
       "matches",
@@ -163,42 +125,47 @@ async function addDefaultPollsToMatch(matchData) {
 }
 
 // ===============================================
-// MATCHES & POLLS 🗳️ (LA VERSION FINALE AUTO-RÉPARATRICE)
+// MATCHES & POLLS 🗳️
 // ===============================================
 export async function getOrCreateMatch(apiMatch) {
   const matchId = String(apiMatch.id);
   const matchRef = doc(db, "matches", matchId);
   const matchSnap = await getDoc(matchRef);
-  const matchDataWithKey = {
+
+  const freshApiData = {
     ...apiMatch,
+    id: matchId,
     sportKey: apiMatch.sportKey || "football",
   };
+
+  // On enlève les 'polls' de l'API car on va les générer nous-mêmes
+  delete freshApiData.polls;
 
   if (!matchSnap.exists()) {
     console.log(
       `🔥 Match ${matchId} non trouvé. Création et génération par IA...`
     );
-    const { polls, ...matchData } = matchDataWithKey;
-    await setDoc(matchRef, { ...matchData, id: matchId });
-    // On appelle notre IA avec toutes les infos du match
-    await addDefaultPollsToMatch({ ...matchData, id: matchId });
-    return { ...matchData, id: matchId };
+    await setDoc(matchRef, freshApiData);
+    await addDefaultPollsToMatch(freshApiData);
+    return freshApiData;
   } else {
-    console.log(`✅ Match ${matchId} trouvé dans Firebase.`);
-    const matchData = matchSnap.data();
+    console.log(
+      `🔄️ Match ${matchId} trouvé. Mise à jour avec les données fraîches de l'API...`
+    );
+    await setDoc(matchRef, freshApiData, { merge: true });
 
-    // 👇 NOTRE MAGIE AUTO-RÉPARATRICE EST ICI 👇
+    const matchDataFromDb = matchSnap.data();
+
     const pollsCollectionRef = collection(db, "matches", matchId, "polls");
     const pollsSnapshot = await getDocs(query(pollsCollectionRef, limit(1)));
     if (pollsSnapshot.empty) {
       console.warn(
         `⚠️ Match ${matchId} trouvé sans sondages. Réparation par IA...`
       );
-      // On appelle l'IA aussi pour réparer les anciens matchs
-      await addDefaultPollsToMatch(matchData);
+      await addDefaultPollsToMatch(freshApiData);
     }
 
-    return matchData;
+    return { ...matchDataFromDb, ...freshApiData };
   }
 }
 
@@ -219,20 +186,17 @@ export async function votePoll(pollDbPath, userChoice, userId) {
   await runTransaction(db, async (transaction) => {
     const pollDoc = await transaction.get(pollRef);
     if (!pollDoc.exists())
-      throw new Error("Le document du sondage n'existe pas !"); // Correction ESLint
-
+      throw new Error("Le document du sondage n'existe pas !");
     const pollData = pollDoc.data();
     const votes = pollData.votes || {};
     const voters = pollData.voters || {};
     const previousVote = voters[userId];
-
     if (previousVote && previousVote !== userChoice) {
       votes[previousVote] = (votes[previousVote] || 1) - 1;
     }
     if (!previousVote || previousVote !== userChoice) {
       votes[userChoice] = (votes[userChoice] || 0) + 1;
     }
-
     voters[userId] = userChoice;
     transaction.update(pollRef, { votes, voters, lastActivity: Date.now() });
   });
@@ -243,12 +207,10 @@ export async function cancelVotePoll(pollDbPath, userId) {
   await runTransaction(db, async (transaction) => {
     const pollDoc = await transaction.get(pollRef);
     if (!pollDoc.exists()) return;
-
     const pollData = pollDoc.data();
     const votes = pollData.votes || {};
     const voters = pollData.voters || {};
     const previousVote = voters[userId];
-
     if (previousVote) {
       votes[previousVote] = Math.max(0, (votes[previousVote] || 1) - 1);
       delete voters[userId];
@@ -258,9 +220,8 @@ export async function cancelVotePoll(pollDbPath, userId) {
 }
 
 // ===============================================
-// ADMIN & CHAT & STATS (Pas de changements ici)
+// ADMIN & CHAT & STATS
 // ===============================================
-
 export async function getAllMatches() {
   const q = query(collection(db, "matches"));
   const snapshot = await getDocs(q);
@@ -283,39 +244,19 @@ export async function addPollToMatch(matchId, newPoll) {
   await setDoc(pollRef, { ...newPoll, votes: {}, voters: {} });
 }
 
-/**
- * Supprime un match ET ses sondages.
- */
 export async function deleteMatch(matchId) {
   if (!matchId)
     throw new Error("Un ID de match est requis pour la suppression.");
-
   console.log(
     `🗑️ Début du processus de suppression pour le match ${matchId}...`
   );
-
   try {
-    // Étape 1: Supprimer tous les sondages dans la subcollection "polls"
     const pollsRef = collection(db, "matches", matchId, "polls");
     const pollsSnapshot = await getDocs(pollsRef);
-
-    if (!pollsSnapshot.empty) {
-      for (const pollDoc of pollsSnapshot.docs) {
-        // On utilise le chemin explicite pour garantir la suppression
-        const pollDocRef = doc(db, "matches", matchId, "polls", pollDoc.id);
-        await deleteDoc(pollDocRef);
-        console.log(`--- Sondage supprimé: ${pollDoc.id}`);
-      }
-    } else {
-      console.log(
-        `--- Aucune subcollection de sondages trouvée pour le match ${matchId}. OK.`
-      );
+    for (const pollDoc of pollsSnapshot.docs) {
+      await deleteDoc(doc(db, "matches", matchId, "polls", pollDoc.id));
     }
-
-    // Étape 2: Supprimer le document principal du match
-    const matchRef = doc(db, "matches", matchId);
-    await deleteDoc(matchRef);
-
+    await deleteDoc(doc(db, "matches", matchId));
     console.log(
       `✅ Match ${matchId} et ses données ont été supprimés avec succès.`
     );
@@ -324,7 +265,6 @@ export async function deleteMatch(matchId) {
       `Erreur critique lors de la suppression du match ${matchId}:`,
       error
     );
-    // On doit peut-être vider le cache local du navigateur si le problème persiste
     throw new Error(`Échec de la suppression pour le match ${matchId}.`);
   }
 }
@@ -344,7 +284,7 @@ export function subscribeToUserStats(userId, onData) {
     if (snapshot.exists()) {
       onData(snapshot.data());
     } else {
-      onData({ points: 0, badges: [], accuracy: 0 }); // Fallback
+      onData({ points: 0, badges: [], accuracy: 0 });
     }
   });
 }
@@ -374,35 +314,35 @@ export async function getLeaderboard(limitCount = 10) {
   return snapshot.docs.map((d) => ({ userId: d.id, ...d.data() }));
 }
 
-// ============== NOUVELLE FONCTION UTILITAIRE DE SEEDING ==============
-function generateSeedComments(pollTitle, teamA, teamB) {
-  const comments = [
-    // Opinion forte pour l'équipe A
-    {
-      text: `Pas de surprise, ${teamA} va plier le match en première mi-temps. C'est trop facile !`,
-      author: `Fan${teamA.replace(/\s/g, "")}`,
-      likes: Math.floor(Math.random() * 90) + 15,
-      isOpinionLeader: true,
-      isControversial: false,
-    },
-    // Opinion forte pour l'équipe B
-    {
-      text: `Tout le monde sous-estime ${teamB}. Ce soir, c'est la masterclass. J'annonce l'exploit !`,
-      author: `UltiFan${teamB.replace(/\s/g, "")}`,
-      likes: Math.floor(Math.random() * 70) + 10,
-      isOpinionLeader: false,
-      isControversial: false,
-    },
-    // Opinion plus rare/controversée (pour tester le badge ⚡)
-    {
-      text: `Je sens un match nul très fermé. Zéro but. Personne n'ose attaquer. Opinion impopulaire, je sais.`,
-      author: "MrX",
-      likes: Math.floor(Math.random() * 15) + 3,
-      isOpinionLeader: false,
-      isControversial: true,
-    },
-  ];
-  return comments.slice(0, 3); // On renvoie les 3 meilleurs
+export async function addReactionToMessage(
+  matchId,
+  chatId,
+  messageId,
+  reactionEmoji
+) {
+  const messageRef = doc(
+    db,
+    "matches",
+    matchId,
+    "chats",
+    chatId,
+    "messages",
+    messageId
+  );
+
+  // On utilise une transaction pour s'assurer que le compteur est toujours juste
+  await runTransaction(db, async (transaction) => {
+    const messageDoc = await transaction.get(messageRef);
+    if (!messageDoc.exists()) {
+      throw "Ce message n'existe pas !";
+    }
+
+    // Le chemin vers le compteur de notre emoji. Ex: "reactions.fire"
+    const reactionField = `reactions.${reactionEmoji}`;
+
+    // On incrémente le compteur de 1. Si le champ n'existe pas, il est créé à 1.
+    transaction.update(messageRef, { [reactionField]: increment(1) });
+  });
 }
 
 export default db;

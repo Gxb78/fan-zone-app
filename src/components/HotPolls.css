@@ -1,61 +1,86 @@
 /* src/components/HotPolls.css */
+
 .hot-polls-container .list-title {
-  font-size: 1.2em; /* On ajuste la taille pour les sidebars */
+  font-size: 1.2em;
+  margin-top: 0;
+  margin-bottom: 15px;
 }
+
 .hot-polls-grid {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 12px;
 }
+
 .hot-poll-card {
   background: var(--surface-dark);
-  padding: 15px; /* On garde le padding ici */
+  padding: 12px;
   border-radius: var(--border-radius);
   border: 1px solid var(--border-color);
   cursor: pointer;
   transition: var(--transition);
-  /* On retire le overflow: hidden si jamais il y en avait un */
+  opacity: 0; /* Caché par défaut */
+  animation: slideIn 0.5s ease-out forwards; /* Même animation que l'autre colonne */
 }
 
-/* 👇 On ajoute la transition à l'élément intérieur */
-.hot-poll-card-inner {
-  transition: var(--transition);
+/* ✅ ANIMATION EN CASCADE AUSSI ICI */
+.hot-poll-card:nth-child(1) {
+  animation-delay: 0.1s;
+}
+.hot-poll-card:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.hot-poll-card:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.hot-poll-card:nth-child(4) {
+  animation-delay: 0.4s;
 }
 
 .hot-poll-card:hover {
   border-color: var(--primary);
-  /* On ne met plus de transform ici ! */
-  box-shadow: 0 0 15px rgba(255, 107, 53, 0.3); /* <-- LA MAGIE EST LÀ */
+  transform: translateX(3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
 
-/* On supprime la règle qui ciblait .hot-poll-card-inner */
-.hot-poll-card:hover .hot-poll-card-inner {
-  /* SUPPRIME TOUT CE BLOC */
-}
 .poll-context {
-  font-size: 0.8em;
+  font-size: 0.75em;
   color: var(--text-secondary);
-  margin-bottom: 5px;
+  margin-bottom: 4px;
   font-weight: 600;
 }
+
 .hot-poll-title {
-  margin: 0 0 10px 0;
-  font-size: 1em;
-  color: var(--text-primary);
-}
-.hot-poll-options.simple {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 10px 0;
+  margin: 0 0 8px 0;
   font-size: 0.9em;
+  color: var(--text-primary);
+  font-weight: 600;
 }
-.hot-poll-options.simple li {
-  padding: 4px 0;
+
+.hot-poll-options-simple {
+  font-size: 0.8em;
   color: var(--text-secondary);
+  margin-bottom: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+
 .total-votes {
   font-size: 0.8em;
-  font-weight: 600;
+  font-weight: 700;
   text-align: right;
   color: var(--primary);
+}
+
+/* On réutilise la même animation que pour l'autre sidebar */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }

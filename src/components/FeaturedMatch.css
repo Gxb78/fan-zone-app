@@ -6,8 +6,9 @@
   margin-bottom: 30px;
   overflow: hidden; /* Important de le garder ici pour les coins arrondis */
   cursor: pointer;
-  border: 1px solid var(--border-color);
-  transition: var(--transition);
+  border: 2px solid transparent; /* On prépare le terrain pour le glow */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  animation: pulse-glow 4s infinite ease-in-out; /* ✅ L'animation ! */
 }
 
 .featured-match-container:hover {
@@ -17,12 +18,12 @@
 
 /* 👇 On ajoute la transition à l'élément intérieur */
 .featured-match-inner {
-    transition: var(--transition);
+  transition: var(--transition);
 }
 
 /* 👇 Et on lui applique le scale au survol du parent */
 .featured-match-container:hover .featured-match-inner {
-    transform: scale(1.02);
+  transform: scale(1.02);
 }
 
 .featured-header {
@@ -62,7 +63,7 @@
 
 /* L'overlay sombre pour la lisibilité, c'est la touche pro ! */
 .featured-body::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -72,7 +73,8 @@
   z-index: 1;
 }
 
-.team-featured, .match-info-featured {
+.team-featured,
+.match-info-featured {
   position: relative;
   z-index: 2;
   color: var(--text-primary);
@@ -114,4 +116,18 @@
 .competition-featured {
   font-size: 1em;
   color: var(--text-secondary);
+}
+@keyframes pulse-glow {
+  0% {
+    border-color: var(--border-color);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  }
+  50% {
+    border-color: var(--primary);
+    box-shadow: 0 0 25px rgba(255, 107, 53, 0.6);
+  }
+  100% {
+    border-color: var(--border-color);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  }
 }

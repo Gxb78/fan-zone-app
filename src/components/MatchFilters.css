@@ -1,0 +1,44 @@
+/* src/components/MatchFilters.css */
+
+.match-filters-container {
+  display: flex;
+  flex-direction: column; /* ✅ On passe en colonne pour le format sidebar */
+  gap: 15px; /* On réduit un peu l'écart */
+  margin-bottom: 25px;
+  /* On enlève le fond, il prendra celui de la sidebar */
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-group label {
+  font-size: 0.9em;
+  font-weight: 600;
+  color: var(--text-secondary);
+  padding-left: 5px;
+}
+
+.filter-group select {
+  padding: 12px;
+  font-size: 1em;
+  font-weight: 600;
+  border: 2px solid var(--border-color);
+  background-color: var(--background-dark);
+  color: var(--text-primary);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.filter-group select:hover {
+  border-color: var(--primary);
+}
+
+.filter-group select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 10px rgba(255, 107, 53, 0.5);
+}

@@ -13,10 +13,9 @@ import "./PollCard.css";
 const PollCard = ({ poll, match, onReply }) => {
   const user = getCurrentUser();
 
-  // On construit le chemin DANS les fonctions, au moment où on en a besoin
   const getPollDbPath = () => ["matches", String(match.id), "polls", poll.id];
 
-  if (!poll) return null; // Sécurité si les données n'ont pas encore chargé
+  if (!poll) return null;
 
   const totalVotes = Object.values(poll.votes || {}).reduce((a, b) => a + b, 0);
   const heatScore = calculateHeatScore(poll);
@@ -26,7 +25,6 @@ const PollCard = ({ poll, match, onReply }) => {
 
   async function handleSelectAndVote(optionKey) {
     if (!user || userVote === optionKey) return;
-    // On doit appeler updateUserStreak après le vote
     await votePoll(getPollDbPath(), optionKey, user.uid);
   }
 
@@ -35,10 +33,15 @@ const PollCard = ({ poll, match, onReply }) => {
     await cancelVotePoll(getPollDbPath(), user.uid);
   }
 
+  // 👇 LA LOGIQUE CENTRALE : On trie le tableau d'options
+  // On s'assure que `poll.options` est un tableau avant de trier
+  const sortedOptions = Array.isArray(poll.options)
+    ? [...poll.options].sort((a, b) => a.order - b.order)
+    : [];
+
   return (
     <div className={`poll-card ${userVote ? "voted" : "can-vote"}`}>
       <div className="poll-header">
-        {/* NOUVEAU: Ajout du contexte du match dans l'en-tête du sondage */}
         {match && (
           <div className="match-context-header">
             <span className="team-name-poll">{match.teamA}</span>
@@ -55,9 +58,9 @@ const PollCard = ({ poll, match, onReply }) => {
         <div className="polarizing-question">"{poll.polarizingQuestion}"</div>
       </div>
       <div className="poll-options">
-        {/* CORRECTION: On utilise Object.entries() pour garantir l'ordre
-            des options tel qu'il a été défini initialement. */}
-        {Object.entries(poll.options).map(([optionKey, optionText]) => {
+        {/* Et on mappe sur le tableau trié ! */}
+        {sortedOptions.map((option) => {
+          const { key: optionKey, text: optionText } = option;
           const optionVotes = poll.votes?.[optionKey] || 0;
           const percentage =
             totalVotes > 0 ? Math.round((optionVotes / totalVotes) * 100) : 0;
@@ -78,19 +81,13 @@ const PollCard = ({ poll, match, onReply }) => {
               className={optionClasses}
               onClick={() => handleSelectAndVote(optionKey)}
             >
-              {/* 1. La barre de progression en fond (fine et moderne) */}
               <div className="option-bar" style={{ width: `${percentage}%` }} />
-
-              {/* 2. Le texte et les stats en surcouche */}
               <div className="option-content-wrapper">
                 <span className="option-text">{optionText}</span>
-
                 <div className="option-stats">
-                  {/* On n'affiche le badge qu'UNE SEULE fois */}
                   {isControversial && (
                     <span className="controversial-badge">⚡ Opinion rare</span>
                   )}
-                  {/* Le pourcentage à droite */}
                   <span className="option-votes">{percentage}%</span>
                 </div>
               </div>
