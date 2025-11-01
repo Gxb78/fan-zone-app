@@ -18,21 +18,21 @@ import {
   setDoc,
   deleteDoc,
   limit,
+  updateDoc, // ✅ On importe updateDoc pour les stats
+  increment,
 } from "firebase/firestore";
 
-// ✅ On importe notre nouvelle IA !
 import { generateRageBaitContent } from "./aiContentGenerator";
 
-import { increment } from "firebase/firestore"; // N'oublie pas d'ajouter "increment" à tes imports en haut !
-
-// ⚡️ Configure ici tes données Firebase projet
+// ✅ CORRECTION SÉCURITÉ : On utilise les variables d'environnement
+// Ne jamais stocker de clés directement dans le code !
 const firebaseConfig = {
-  apiKey: "AIzaSyDWcubMybHp7UZZhmB8obZL4EixPPb59BY",
-  authDomain: "fan-zone-610dd.firebaseapp.com",
-  projectId: "fan-zone-610dd",
-  storageBucket: "fan-zone-610dd.appspot.com",
-  messagingSenderId: "367017224731",
-  appId: "1:367017224731:web:cb1d2ae2a828e17c3426be",
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
 };
 
 const app = initializeApp(firebaseConfig);
@@ -62,23 +62,18 @@ export function getCurrentUser() {
 // FONCTION UTILITAIRE POUR CRÉER LES SONDAGES (via l'IA)
 // ===============================================
 async function addDefaultPollsToMatch(matchData) {
-  // ✅ On utilise notre IA pour générer tout le contenu
+  // ... (Le reste de cette fonction est déjà bon, on ne change rien)
   const { polls } = generateRageBaitContent(matchData);
   const { id: matchId, teamA, teamB } = matchData;
 
   if (!polls || polls.length === 0) return;
 
-  // On enregistre les sondages générés dans Firebase
   for (const poll of polls) {
     const pollRef = doc(db, "matches", String(matchId), "polls", poll.id);
-
-    // On enlève "seedVotes" car il n'est plus généré par notre nouvelle IA,
-    // mais on garde la variable pour éviter tout crash si une ancienne structure traîne.
     const { seedVotes, ...pollData } = poll;
-
     await setDoc(pollRef, {
-      ...pollData, // Contient les options et les seedComments
-      votes: {}, // Initialise les votes à zéro
+      ...pollData,
+      votes: {},
       voters: {},
     });
   }
@@ -86,7 +81,6 @@ async function addDefaultPollsToMatch(matchData) {
     `🤖 IA RageBait: ${polls.length} débats générés pour le match ${matchId}`
   );
 
-  // On crée les messages d'ouverture de chat pour chaque sondage
   for (const poll of polls) {
     const pollChatRef = collection(
       db,
@@ -103,7 +97,6 @@ async function addDefaultPollsToMatch(matchData) {
     });
   }
 
-  // On génère aussi quelques faux messages dans le chat général
   const generalChatRef = collection(
     db,
     "matches",
@@ -128,6 +121,7 @@ async function addDefaultPollsToMatch(matchData) {
 // MATCHES & POLLS 🗳️
 // ===============================================
 export async function getOrCreateMatch(apiMatch) {
+  // ... (Cette fonction reste inchangée)
   const matchId = String(apiMatch.id);
   const matchRef = doc(db, "matches", matchId);
   const matchSnap = await getDoc(matchRef);
@@ -137,8 +131,6 @@ export async function getOrCreateMatch(apiMatch) {
     id: matchId,
     sportKey: apiMatch.sportKey || "football",
   };
-
-  // On enlève les 'polls' de l'API car on va les générer nous-mêmes
   delete freshApiData.polls;
 
   if (!matchSnap.exists()) {
@@ -155,7 +147,6 @@ export async function getOrCreateMatch(apiMatch) {
     await setDoc(matchRef, freshApiData, { merge: true });
 
     const matchDataFromDb = matchSnap.data();
-
     const pollsCollectionRef = collection(db, "matches", matchId, "polls");
     const pollsSnapshot = await getDocs(query(pollsCollectionRef, limit(1)));
     if (pollsSnapshot.empty) {
@@ -164,7 +155,6 @@ export async function getOrCreateMatch(apiMatch) {
       );
       await addDefaultPollsToMatch(freshApiData);
     }
-
     return { ...matchDataFromDb, ...freshApiData };
   }
 }
@@ -183,14 +173,20 @@ export function subscribeToPoll(pollDbPath, onData) {
 
 export async function votePoll(pollDbPath, userChoice, userId) {
   const pollRef = doc(db, ...pollDbPath);
+  let isNewVote = false; // On va tracker si c'est un premier vote
+
   await runTransaction(db, async (transaction) => {
     const pollDoc = await transaction.get(pollRef);
     if (!pollDoc.exists())
       throw new Error("Le document du sondage n'existe pas !");
+
     const pollData = pollDoc.data();
     const votes = pollData.votes || {};
     const voters = pollData.voters || {};
     const previousVote = voters[userId];
+
+    isNewVote = !previousVote; // C'est un nouveau vote s'il n'y avait pas de vote précédent
+
     if (previousVote && previousVote !== userChoice) {
       votes[previousVote] = (votes[previousVote] || 1) - 1;
     }
@@ -200,9 +196,15 @@ export async function votePoll(pollDbPath, userChoice, userId) {
     voters[userId] = userChoice;
     transaction.update(pollRef, { votes, voters, lastActivity: Date.now() });
   });
+
+  // ✨ NOUVEAUTÉ ENGAGEMENT : On met à jour les stats de l'utilisateur APRÈS la transaction
+  if (isNewVote) {
+    await updateUserStatsOnVote(userId);
+  }
 }
 
 export async function cancelVotePoll(pollDbPath, userId) {
+  // ... (Cette fonction reste inchangée)
   const pollRef = doc(db, ...pollDbPath);
   await runTransaction(db, async (transaction) => {
     const pollDoc = await transaction.get(pollRef);
@@ -223,12 +225,14 @@ export async function cancelVotePoll(pollDbPath, userId) {
 // ADMIN & CHAT & STATS
 // ===============================================
 export async function getAllMatches() {
+  // ... (inchangé)
   const q = query(collection(db, "matches"));
   const snapshot = await getDocs(q);
   return snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
 
 export async function addMatch(matchData) {
+  // ... (inchangé)
   const matchId = `${matchData.teamA.replace(
     /\s/g,
     ""
@@ -239,12 +243,14 @@ export async function addMatch(matchData) {
 }
 
 export async function addPollToMatch(matchId, newPoll) {
+  // ... (inchangé)
   if (!matchId || !newPoll.id) throw new Error("Données du sondage invalides.");
   const pollRef = doc(db, "matches", matchId, "polls", newPoll.id);
   await setDoc(pollRef, { ...newPoll, votes: {}, voters: {} });
 }
 
 export async function deleteMatch(matchId) {
+  // ... (inchangé)
   if (!matchId)
     throw new Error("Un ID de match est requis pour la suppression.");
   console.log(
@@ -270,6 +276,7 @@ export async function deleteMatch(matchId) {
 }
 
 export async function sendMessage(matchId, chatId, messageData) {
+  // ... (inchangé)
   const messagesPath = `matches/${matchId}/chats/${chatId}/messages`;
   const chatCollectionRef = collection(db, messagesPath);
   await addDoc(chatCollectionRef, {
@@ -279,6 +286,7 @@ export async function sendMessage(matchId, chatId, messageData) {
 }
 
 export function subscribeToUserStats(userId, onData) {
+  // ... (inchangé)
   const userStatsRef = doc(db, "userStats", userId);
   return onSnapshot(userStatsRef, (snapshot) => {
     if (snapshot.exists()) {
@@ -290,6 +298,7 @@ export function subscribeToUserStats(userId, onData) {
 }
 
 export async function initializeUserStats(userId) {
+  // ... (inchangé)
   const userStatsRef = doc(db, "userStats", userId);
   const docSnap = await getDoc(userStatsRef);
   if (!docSnap.exists()) {
@@ -304,7 +313,28 @@ export async function initializeUserStats(userId) {
   }
 }
 
+// ✨ NOUVELLE FONCTION D'ENGAGEMENT
+// Met à jour les stats d'un utilisateur après un vote
+async function updateUserStatsOnVote(userId) {
+  if (!userId) return;
+  const userStatsRef = doc(db, "userStats", userId);
+  try {
+    // On incrémente le total des votes et on ajoute des points
+    await updateDoc(userStatsRef, {
+      totalVotes: increment(1),
+      points: increment(5), // +5 points pour chaque vote
+    });
+  } catch (error) {
+    console.error(
+      `Impossible de mettre à jour les stats pour l'utilisateur ${userId}:`,
+      error
+    );
+    // On ne bloque pas l'UI pour ça, c'est une opération en arrière-plan.
+  }
+}
+
 export async function getLeaderboard(limitCount = 10) {
+  // ... (inchangé)
   const q = query(
     collection(db, "userStats"),
     orderBy("points", "desc"),
@@ -320,6 +350,7 @@ export async function addReactionToMessage(
   messageId,
   reactionEmoji
 ) {
+  // ... (Cette fonction reste inchangée)
   const messageRef = doc(
     db,
     "matches",
@@ -330,17 +361,12 @@ export async function addReactionToMessage(
     messageId
   );
 
-  // On utilise une transaction pour s'assurer que le compteur est toujours juste
   await runTransaction(db, async (transaction) => {
     const messageDoc = await transaction.get(messageRef);
     if (!messageDoc.exists()) {
       throw "Ce message n'existe pas !";
     }
-
-    // Le chemin vers le compteur de notre emoji. Ex: "reactions.fire"
     const reactionField = `reactions.${reactionEmoji}`;
-
-    // On incrémente le compteur de 1. Si le champ n'existe pas, il est créé à 1.
     transaction.update(messageRef, { [reactionField]: increment(1) });
   });
 }
