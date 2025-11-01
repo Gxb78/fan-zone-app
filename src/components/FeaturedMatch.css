@@ -4,24 +4,21 @@
   background-color: var(--surface-dark);
   border-radius: var(--border-radius);
   margin-bottom: 30px;
-  overflow: hidden; /* Important de le garder ici pour les coins arrondis */
+  overflow: hidden;
   cursor: pointer;
-  border: 2px solid transparent; /* On prépare le terrain pour le glow */
+  border: 2px solid transparent;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-  animation: pulse-glow 4s infinite ease-in-out; /* ✅ L'animation ! */
+  animation: pulse-glow 4s infinite ease-in-out;
 }
 
 .featured-match-container:hover {
   border-color: var(--primary);
-  /* On ne met plus de scale ici ! */
 }
 
-/* 👇 On ajoute la transition à l'élément intérieur */
 .featured-match-inner {
   transition: var(--transition);
 }
 
-/* 👇 Et on lui applique le scale au survol du parent */
 .featured-match-container:hover .featured-match-inner {
   transform: scale(1.02);
 }
@@ -50,6 +47,11 @@
   color: var(--text-primary);
 }
 
+/* 👇 NOUVELLE ANIMATION POUR LE MODE LIVE 👇 */
+.live-badge.is-live {
+  animation: pulse-live 2s infinite;
+}
+
 .featured-body {
   height: 250px;
   background-size: cover;
@@ -61,7 +63,6 @@
   padding: 20px;
 }
 
-/* L'overlay sombre pour la lisibilité, c'est la touche pro ! */
 .featured-body::after {
   content: "";
   position: absolute;
@@ -117,6 +118,7 @@
   font-size: 1em;
   color: var(--text-secondary);
 }
+
 @keyframes pulse-glow {
   0% {
     border-color: var(--border-color);
@@ -129,5 +131,16 @@
   100% {
     border-color: var(--border-color);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* Effet de "pouls" pendant les moments chauds */
+@keyframes pulse-live {
+  0%,
+  100% {
+    box-shadow: 0 0 15px rgba(255, 107, 53, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(255, 107, 53, 0.8);
   }
 }

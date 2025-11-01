@@ -6,13 +6,16 @@
   border: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
-  height: 100%; /* Important pour que le layout flex fonctionne */
+  height: 100%;
+  /* Ces 2 lignes forcent le conteneur à bien se comporter dans un parent flex/grid */
+  flex-grow: 1;
+  min-height: 0;
 }
 
 .chat-header {
   padding: 15px;
   border-bottom: 1px solid var(--border-color);
-  flex-shrink: 0; /* On s'assure qu'il ne se compresse pas */
+  flex-shrink: 0;
 }
 .chat-header h2 {
   margin: 0;
@@ -20,13 +23,16 @@
 }
 
 .messages-list {
-  flex-grow: 1; /* Le plus important : la liste prend TOUTE la place dispo */
-  overflow-y: auto; /* Active le scroll si les messages dépassent */
+  /* C'est LUI qui prend toute la place et qui scrolle */
+  flex-grow: 1;
+  overflow-y: auto;
   padding: 15px;
   display: flex;
   flex-direction: column;
-  gap: 15px; /* Un peu d'espace entre les bulles */
+  gap: 15px;
 }
+
+/* ... (le reste du fichier est inchangé et correct) ... */
 
 .no-messages {
   display: flex;
@@ -40,10 +46,10 @@
 .message-item {
   display: flex;
   flex-direction: column;
-  max-width: 85%; /* Les messages ne prendront jamais toute la largeur */
+  max-width: 85%;
+  animation: bounceIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
-/* 👇 LA CORRECTION DU TEXTE EST ICI 👇 */
 .message-author {
   font-size: 0.8em;
   color: var(--text-secondary);
@@ -57,14 +63,13 @@
   font-weight: 600;
 }
 .message-time {
-  margin-left: auto; /* Pousse le timestamp tout à droite */
+  margin-left: auto;
 }
 
-/* 👇 LA CORRECTION DES ANGLES EST ICI 👇 */
 .message-bubble {
   padding: 10px 15px;
-  border-radius: 18px; /* On augmente pour un effet "pilule" */
-  width: fit-content; /* La bulle s'adapte à la taille du texte */
+  border-radius: 18px;
+  width: fit-content;
 }
 
 .quoted-message {
@@ -76,21 +81,17 @@
   opacity: 0.8;
 }
 
-/* --- MESSAGES REÇUS (CEUX DES AUTRES) --- */
 .message-item.received {
   align-self: flex-start;
-  /* 👇 On s'assure que le contenu DANS le bloc est aussi à gauche */
   align-items: flex-start;
 }
 .message-item.received .message-bubble {
   background-color: #3c4a60;
-  border-top-left-radius: 4px; /* L'angle "cassé" qui donne du style */
+  border-top-left-radius: 4px;
 }
 
-/* --- MESSAGES ENVOYÉS (LES TIENS) --- */
 .message-item.sent {
   align-self: flex-end;
-  /* 👇 LA CORRECTION MAGIQUE EST ICI ! On aligne le contenu DANS le bloc à droite */
   align-items: flex-end;
 }
 .message-item.sent .message-author {
@@ -99,7 +100,7 @@
 .message-item.sent .message-bubble {
   background-color: var(--primary);
   color: var(--text-primary);
-  border-top-right-radius: 4px; /* L'angle "cassé" de l'autre côté */
+  border-top-right-radius: 4px;
 }
 
 .user-pronostic-badge {
@@ -110,7 +111,6 @@
   font-weight: 600;
 }
 
-/* --- FORMULAIRE D'ENVOI --- */
 .chat-form {
   padding: 15px;
   border-top: 1px solid var(--border-color);
@@ -127,7 +127,7 @@
   padding: 12px 18px;
   background: var(--surface-dark);
   border: 1px solid var(--border-color);
-  border-radius: 20px; /* Pour un look moderne */
+  border-radius: 20px;
   color: var(--text-primary);
   font-size: 1em;
 }
@@ -139,4 +139,19 @@
   color: var(--text-primary);
   font-weight: 700;
   cursor: pointer;
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }

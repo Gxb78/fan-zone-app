@@ -1,5 +1,6 @@
 // src/components/PollCard.jsx
 import React from "react";
+import confetti from "canvas-confetti"; // 👈 On importe la magie !
 import { votePoll, cancelVotePoll, getCurrentUser } from "../services/firebase";
 import {
   calculateHeatScore,
@@ -9,6 +10,16 @@ import {
 } from "../utils/helpers";
 import CommentsSection from "./CommentsSection";
 import "./PollCard.css";
+
+// ✨ Quand l'utilisateur vote, on déclenche une animation !
+const celebrateVote = () => {
+  confetti({
+    particleCount: 100,
+    spread: 70,
+    origin: { y: 0.6 },
+    colors: ["#ff6b35", "#764ba2", "#ffffff"],
+  });
+};
 
 const PollCard = ({ poll, match, onReply }) => {
   const user = getCurrentUser();
@@ -26,6 +37,7 @@ const PollCard = ({ poll, match, onReply }) => {
   async function handleSelectAndVote(optionKey) {
     if (!user || userVote === optionKey) return;
     await votePoll(getPollDbPath(), optionKey, user.uid);
+    celebrateVote(); // 👈 On appelle la fonction de célébration ici !
   }
 
   async function handleCancelVote() {
@@ -33,8 +45,6 @@ const PollCard = ({ poll, match, onReply }) => {
     await cancelVotePoll(getPollDbPath(), user.uid);
   }
 
-  // 👇 LA LOGIQUE CENTRALE : On trie le tableau d'options
-  // On s'assure que `poll.options` est un tableau avant de trier
   const sortedOptions = Array.isArray(poll.options)
     ? [...poll.options].sort((a, b) => a.order - b.order)
     : [];
@@ -58,7 +68,6 @@ const PollCard = ({ poll, match, onReply }) => {
         <div className="polarizing-question">"{poll.polarizingQuestion}"</div>
       </div>
       <div className="poll-options">
-        {/* Et on mappe sur le tableau trié ! */}
         {sortedOptions.map((option) => {
           const { key: optionKey, text: optionText } = option;
           const optionVotes = poll.votes?.[optionKey] || 0;

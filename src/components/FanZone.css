@@ -5,118 +5,65 @@
   width: 95%;
   margin: 0 auto;
 }
+
+/* 👇 REFONTE TOTALE DU LAYOUT AVEC CSS GRID 👇 */
 .fan-zone-layout {
-  display: flex; /* On utilise flexbox pour aligner les deux colonnes */
+  display: grid;
+  grid-template-columns: 320px 1fr 380px; /* Gauche | Centre | Droite */
   gap: 25px;
-  align-items: flex-start; /* Pour que les colonnes commencent bien en haut */
+  align-items: flex-start;
 }
 
 .fan-zone-main {
-  flex: 1; /* La colonne principale prend toute la place restante */
   min-width: 0;
 }
 
+/* Colonnes latérales fixes (sticky) */
+.fan-zone-sidebar-left,
 .fan-zone-chat {
-  width: 380px; /* On lui donne une largeur fixe */
-  flex-shrink: 0; /* TRÈS IMPORTANT: On l'empêche de se rétrécir */
-  position: sticky; /* Pour qu'il reste visible quand on scrolle */
+  position: sticky;
   top: 20px;
-  /* On lui donne une hauteur maximale pour que le scroll se fasse à l'intérieur */
   height: calc(100vh - 120px);
+  display: flex; /* Force l'enfant à s'étirer */
+  flex-direction: column;
 }
 
-.match-view-header {
-  background: var(--surface-dark);
-  padding: 20px;
-  border-radius: var(--border-radius);
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  border: 2px solid var(--border-color);
+/* On ajoute un scroll interne pour la colonne de gauche SI nécessaire */
+.fan-zone-sidebar-left {
+  overflow-y: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
-
-#btn-back {
-  background: var(--primary);
-  color: var(--text-primary);
-  border: none;
-  padding: 12px 24px;
-  border-radius: var(--border-radius);
-  cursor: pointer;
-  font-weight: 600;
-  transition: var(--transition);
-}
-
-#btn-back:hover {
-  background: var(--primary-dark);
-  transform: translateX(-2px);
+.fan-zone-sidebar-left::-webkit-scrollbar {
+  display: none;
 }
 
 /* Responsive pour la FanZone */
 @media (max-width: 1200px) {
   .fan-zone-layout {
-    flex-direction: column;
+    grid-template-columns: 1fr; /* On repasse à une seule colonne */
   }
+  .fan-zone-sidebar-left,
   .fan-zone-chat {
     width: 100%;
-    position: static;
+    position: static; /* On annule le sticky */
     margin-top: 20px;
-    height: 60vh;
+    height: auto; /* Hauteur automatique sur mobile */
+  }
+  .fan-zone-chat {
+    height: 70vh; /* Sauf pour le chat qui garde une hauteur définie */
   }
 }
-/* 👇 STYLES POUR LA BANNIÈRE "FEAR OF MISSING OUT" */
-.fomo-banner {
-  background: linear-gradient(90deg, var(--secondary) 0%, var(--primary) 100%);
-  border-radius: var(--border-radius);
-  margin-bottom: 25px;
-  padding: 3px; /* Crée un effet de bordure avec le dégradé */
-}
 
-.fomo-content {
-  background-color: var(--surface-dark);
-  padding: 20px;
-  border-radius: 10px; /* Un peu moins que le parent pour voir la bordure */
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.fomo-icon {
-  font-size: 2.5em;
-  margin-right: 20px;
-}
-
-.fomo-text {
-  flex-grow: 1;
-}
-
-.fomo-title {
-  font-size: 1.3em;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-.fomo-subtitle {
-  color: var(--text-secondary);
-}
-
-.live-users {
-  font-size: 1.1em;
-  font-weight: 700;
-  color: var(--text-primary);
-  background-color: var(--background-dark);
-  padding: 8px 16px;
-  border-radius: 20px;
-}
-/* 👇 STYLES POUR LES AUTRES DÉBATS 👇 */
+/* --- Styles pour les "Autres débats" (maintenant dans la colonne de gauche) --- */
 .other-polls-container {
-  margin-top: 30px;
+  margin-top: 0;
 }
 
 .other-polls-title {
-  font-size: 1.5em;
+  font-size: 1.2em;
   font-weight: 700;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   padding-bottom: 10px;
   border-bottom: 2px solid var(--border-color);
   color: var(--text-primary);
@@ -124,13 +71,13 @@
 
 .other-polls-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
+  grid-template-columns: 1fr; /* Une seule colonne dans la sidebar */
+  gap: 15px;
 }
 
 .other-poll-card {
   background: var(--surface-dark);
-  padding: 20px;
+  padding: 15px;
   border-radius: var(--border-radius);
   border: 1px solid var(--border-color);
   transition: var(--transition);
@@ -139,12 +86,12 @@
 
 .other-poll-card:hover {
   border-color: var(--primary);
-  transform: translateY(-3px);
+  transform: translateY(-2px);
 }
 
 .other-poll-card h4 {
-  margin: 0 0 10px 0;
-  font-size: 1.2em;
+  margin: 0 0 8px 0;
+  font-size: 1.1em;
 }
 
 .other-poll-card p {
@@ -152,30 +99,4 @@
   font-style: italic;
   color: var(--text-secondary);
   font-size: 0.9em;
-}
-.match-view-header {
-  background: var(--surface-dark);
-  padding: 20px;
-  border-radius: var(--border-radius);
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  border: 2px solid var(--border-color);
-}
-
-#btn-back {
-  background: var(--primary);
-  color: var(--text-primary);
-  border: none;
-  padding: 12px 24px;
-  border-radius: var(--border-radius);
-  cursor: pointer;
-  font-weight: 600;
-  transition: var(--transition);
-}
-
-#btn-back:hover {
-  background: var(--primary-dark);
-  transform: translateX(-2px);
 }
