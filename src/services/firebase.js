@@ -34,7 +34,7 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+export const db = getFirestore(app);
 // 👇 MODIFICATION ICI : On exporte 'auth' pour le rendre disponible
 export const auth = getAuth(app);
 
@@ -371,5 +371,3 @@ export async function addReactionToMessage(
     transaction.update(messageRef, { [reactionField]: increment(1) });
   });
 }
-
-export default db;

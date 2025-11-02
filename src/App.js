@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import React, { useState } from "react";
 import Lobby from "@/features/lobby/components/Lobby/Lobby";
-import FanZone from "./components/FanZone";
+import MatchPage from "@/features/match/components/MatchPage/MatchPage"; // 👈 Ajoutez cette ligne
 import UserStats from "./components/UserStats";
 import Leaderboard from "./components/Leaderboard";
 import Admin from "./pages/Admin";
@@ -31,7 +31,7 @@ export const AppContent = () => {
           <ErrorBoundary>
             <Routes>
               <Route path="/" element={<Lobby />} />
-              <Route path="/match/:sportKey/:matchId" element={<FanZone />} />
+              <Route path="/match/:sportKey/:matchId" element={<MatchPage />} />
               <Route path="/admin" element={<Admin />} />
             </Routes>
           </ErrorBoundary>
