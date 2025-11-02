@@ -1,77 +1,37 @@
-// src/App.js
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Link,
-  useLocation,
-  useNavigate,
-} from "react-router-dom";
-import React, { useState, useEffect } from "react";
-import Lobby from "./components/Lobby";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import React, { useState } from "react";
+import Lobby from "@/features/lobby/components/Lobby/Lobby";
 import FanZone from "./components/FanZone";
 import UserStats from "./components/UserStats";
 import Leaderboard from "./components/Leaderboard";
 import Admin from "./pages/Admin";
-import { signInUser, initializeUserStats } from "./services/firebase";
-import masterSportData from "./data/masterSportData";
 import ErrorBoundary from "./components/ui/ErrorBoundary";
+// 👇 On importe notre nouveau composant Header en utilisant les alias !
+import Header from "@/components/layout/Header";
+import { useAuth } from "@/features/auth/hooks/useAuth";
 import "./App.css";
 
-// --- COMPOSANT POUR LE CONTENU DE L'APP ---
-// On l'exporte pour pouvoir le tester séparément
+// On importe le nouveau CSS pour le Header
+import "@/components/layout/Header.css";
+
 export const AppContent = () => {
   const [userStatsOpen, setUserStatsOpen] = useState(false);
   const [leaderboardOpen, setLeaderboardOpen] = useState(false);
-  const location = useLocation();
-  const navigate = useNavigate();
-
-  const isMatchPage = location.pathname.startsWith("/match/");
-  const allMatches = Object.values(masterSportData).flatMap(
-    (sport) => sport.matches
-  );
 
   return (
     <div className="App">
       <div className="app-container">
-        <div className="app-navbar">
-          <div className="navbar-left">
-            {isMatchPage && (
-              <button className="navbar-btn-back" onClick={() => navigate(-1)}>
-                ←
-              </button>
-            )}
-            <Link to="/" style={{ textDecoration: "none", color: "inherit" }}>
-              <h1 className="navbar-logo">🔥 Fan Zone</h1>
-            </Link>
-          </div>
-          <div className="navbar-right">
-            <Link to="/admin" className="navbar-btn admin-link">
-              Admin
-            </Link>
-            <button
-              className="navbar-btn"
-              onClick={() => setUserStatsOpen(true)}
-            >
-              📊 Mes Stats
-            </button>
-            <button
-              className="navbar-btn"
-              onClick={() => setLeaderboardOpen(true)}
-            >
-              🏆 Leaderboard
-            </button>
-          </div>
-        </div>
+        {/* On remplace toute la navbar par notre composant Header */}
+        <Header
+          onOpenStats={() => setUserStatsOpen(true)}
+          onOpenLeaderboard={() => setLeaderboardOpen(true)}
+        />
 
         <div className="app-content">
           <ErrorBoundary>
             <Routes>
               <Route path="/" element={<Lobby />} />
-              <Route
-                path="/match/:sportKey/:matchId"
-                element={<FanZone allMatches={allMatches} />}
-              />
+              <Route path="/match/:sportKey/:matchId" element={<FanZone />} />
               <Route path="/admin" element={<Admin />} />
             </Routes>
           </ErrorBoundary>
@@ -90,17 +50,13 @@ export const AppContent = () => {
   );
 };
 
-// --- COMPOSANT PRINCIPAL APP ---
 function App() {
-  useEffect(() => {
-    signInUser((authenticatedUser) => {
-      if (authenticatedUser) {
-        initializeUserStats(authenticatedUser.uid);
-      }
-    });
-  }, []);
+  const { loading } = useAuth();
 
-  // Le Router est maintenant le parent unique de AppContent ici
+  if (loading) {
+    return <div className="loading">Chargement de la Fan Zone...</div>;
+  }
+
   return (
     <Router>
       <AppContent />

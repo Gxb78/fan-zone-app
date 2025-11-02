@@ -1,121 +1,23 @@
-// src/components/Lobby.jsx
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import FeaturedMatch from "./FeaturedMatch";
-import HotPolls from "./HotPolls";
-import LiveCommentaryFeed from "./LiveCommentaryFeed";
-import SportSelector from "./SportSelector";
-import MatchFilters from "./MatchFilters";
-import masterSportData from "../data/masterSportData";
-import { getMatchTimeStatus } from "../utils/helpers";
-import { generateRageBaitContent } from "../services/aiContentGenerator";
-import "./Lobby.css";
-
-const THESPORTSDB_KEY = "123";
-const TOP_LEAGUES = [
-  { name: "Ligue 1", id: "4334" },
-  { name: "Premier League", id: "4328" },
-  { name: "La Liga", id: "4335" },
-  { name: "Serie A", id: "4332" },
-  { name: "Bundesliga", id: "4331" },
-];
+// On importe nos nouveaux hooks et composants avec les alias
+import { useMatches } from "@/features/lobby/hooks/useMatches";
+import FeaturedMatch from "@/components/FeaturedMatch";
+import HotPolls from "@/components/HotPolls";
+import LiveCommentaryFeed from "@/components/LiveCommentaryFeed";
+import SportSelector from "@/components/SportSelector";
+import MatchFilters from "@/components/MatchFilters";
+import { getMatchTimeStatus } from "@/utils/helpers";
+import "./Lobby.css"; // L'import CSS est maintenant local
 
 const Lobby = () => {
-  const [allMatches, setAllMatches] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [selectedSport, setSelectedSport] = useState("football");
   const [selectedLeague, setSelectedLeague] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (selectedSport !== "football") {
-      setAllMatches([]);
-      setLoading(false);
-      return;
-    }
-
-    const fetchMatches = async () => {
-      setLoading(true);
-      try {
-        console.log(
-          "⚽ Appel API via PROXY pour les 5 grands championnats (poliment)..."
-        );
-        let allApiMatches = [];
-
-        for (const league of TOP_LEAGUES) {
-          const [nextResponse, pastResponse] = await Promise.all([
-            fetch(
-              `/api-football/${THESPORTSDB_KEY}/eventsnextleague.php?id=${league.id}`
-            ),
-            fetch(
-              `/api-football/${THESPORTSDB_KEY}/eventspastleague.php?id=${league.id}`
-            ),
-          ]);
-
-          if (nextResponse.ok) {
-            const data = await nextResponse.json();
-            if (data.events) allApiMatches.push(...data.events);
-          }
-          if (pastResponse.ok) {
-            const data = await pastResponse.json();
-            if (data.events) allApiMatches.push(...data.events);
-          }
-
-          await new Promise((res) => setTimeout(res, 200));
-        }
-
-        if (allApiMatches.length === 0) {
-          throw new Error("L'API n'a retourné aucun match.");
-        }
-
-        const uniqueMatches = Array.from(
-          new Map(allApiMatches.map((match) => [match.idEvent, match])).values()
-        );
-        const fetchedMatches = uniqueMatches.map((match) => {
-          const matchDate = match.strTime
-            ? `${match.dateEvent}T${match.strTime}Z`
-            : match.dateEvent;
-          const isFinished =
-            match.intHomeScore !== null && match.intAwayScore !== null;
-          const rageBaitData = generateRageBaitContent({
-            teamA: match.strHomeTeam,
-            teamB: match.strAwayTeam,
-          });
-
-          return {
-            id: match.idEvent,
-            competition: match.strLeague,
-            date: matchDate,
-            status: isFinished ? "FINISHED" : "SCHEDULED",
-            scoreA: match.intHomeScore,
-            scoreB: match.intAwayScore,
-            liveMinute: null,
-            teamA: match.strHomeTeam,
-            teamB: match.strAwayTeam,
-            logoA: match.strHomeTeamBadge,
-            logoB: match.strAwayTeamBadge,
-            bgImage:
-              match.strThumb ||
-              `https://picsum.photos/seed/${match.idEvent}/800/600`,
-            sportKey: "football",
-            polls: rageBaitData.polls,
-            usersEngaged: match.intSpectators
-              ? parseInt(match.intSpectators.replace(/,/g, ""), 10)
-              : Math.floor(Math.random() * 4000) + 500,
-          };
-        });
-        setAllMatches(fetchedMatches);
-      } catch (error) {
-        console.warn(`API a échoué. Fallback local.`, error.message);
-        setAllMatches(masterSportData.football?.matches || []);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMatches();
-  }, [selectedSport]);
+  // 👇 Toute la complexité de la récupération de données est maintenant ici !
+  const { matches: allMatches, loading, error } = useMatches(selectedSport);
 
   const handleSelectMatch = (match, sportKey) => {
     navigate(`/match/${sportKey}/${match.id}`, { state: { matchData: match } });
@@ -155,6 +57,10 @@ const Lobby = () => {
     return <div className="loading">Chargement des matchs européens...</div>;
   }
 
+  if (error && allMatches.length === 0) {
+    return <div className="no-data">Erreur de chargement des matchs.</div>;
+  }
+
   return (
     <div className="lobby-final-layout">
       <div className="lobby-sidebar-left">
@@ -168,18 +74,15 @@ const Lobby = () => {
           selectedSport={selectedSport}
           onSelectSport={setSelectedSport}
         />
-
         {featuredMatch ? (
           <>
             <FeaturedMatch
               match={featuredMatch}
               onSelectMatch={handleSelectMatch}
             />
-
             {otherMatches.length > 0 && (
               <h3 className="list-title">Autres Matchs</h3>
             )}
-
             <div className="match-list-container">
               {otherMatches.map((match) => (
                 <div
@@ -221,11 +124,6 @@ const Lobby = () => {
                 </div>
               ))}
             </div>
-            {otherMatches.length === 0 && featuredMatch && (
-              <div className="no-data">
-                Aucun autre match ne correspond à vos filtres.
-              </div>
-            )}
           </>
         ) : (
           <div className="no-data">

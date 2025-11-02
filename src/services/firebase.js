@@ -18,14 +18,12 @@ import {
   setDoc,
   deleteDoc,
   limit,
-  updateDoc, // ✅ On importe updateDoc pour les stats
+  updateDoc,
   increment,
 } from "firebase/firestore";
 
 import { generateRageBaitContent } from "./aiContentGenerator";
 
-// ✅ CORRECTION SÉCURITÉ : On utilise les variables d'environnement
-// Ne jamais stocker de clés directement dans le code !
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
   authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
@@ -37,7 +35,8 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const auth = getAuth(app);
+// 👇 MODIFICATION ICI : On exporte 'auth' pour le rendre disponible
+export const auth = getAuth(app);
 
 // ===============================================
 // AUTH & USER 👤
@@ -57,6 +56,8 @@ export function signInUser(callback) {
 export function getCurrentUser() {
   return auth.currentUser;
 }
+
+// ... (le reste du fichier ne change pas) ...
 
 // ===============================================
 // FONCTION UTILITAIRE POUR CRÉER LES SONDAGES (via l'IA)
@@ -350,7 +351,6 @@ export async function addReactionToMessage(
   messageId,
   reactionEmoji
 ) {
-  // ... (Cette fonction reste inchangée)
   const messageRef = doc(
     db,
     "matches",
@@ -364,7 +364,8 @@ export async function addReactionToMessage(
   await runTransaction(db, async (transaction) => {
     const messageDoc = await transaction.get(messageRef);
     if (!messageDoc.exists()) {
-      throw "Ce message n'existe pas !";
+      // 👇 CORRECTION ICI 👇
+      throw new Error("Ce message n'existe pas !");
     }
     const reactionField = `reactions.${reactionEmoji}`;
     transaction.update(messageRef, { [reactionField]: increment(1) });

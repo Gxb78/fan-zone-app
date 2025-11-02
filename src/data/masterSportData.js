@@ -9,8 +9,11 @@ const masterSportData = {
         id: "PSG_OM_LOCAL_V4",
         competition: "Ligue 1 - Le Classique",
         time: "Ce soir 21:00",
-        date: "2025-11-01T21:00:00", // On ajoute une date pour la cohérence
+        date: "2025-11-01T21:00:00",
         status: "SCHEDULED",
+        // 👇 ON AJOUTE LES PROPRIÉTÉS MANQUANTES ICI 👇
+        scoreA: null,
+        scoreB: null,
         teamA: "Paris SG",
         teamB: "Marseille",
         logoA:
@@ -48,7 +51,6 @@ const masterSportData = {
       },
     ],
   },
-  // On laisse les clés pour Tennis et F1, mais vides, pour ne pas casser le sélecteur.
   tennis: {
     name: "Tennis",
     icon: "🎾",
