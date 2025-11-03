@@ -1,6 +1,5 @@
 import React from "react";
 import { useUserStats } from "../../hooks/useUserStats";
-// 👇 NOUVEAU : On importe nos définitions de badges centralisées
 import { BADGE_DEFINITIONS } from "@/data/badgeData";
 import "./UserStats.css";
 
@@ -24,7 +23,6 @@ const UserStats = ({ isOpen, onClose }) => {
         ) : (
           <div className="user-stats-content">
             <div className="stats-row">
-              {/* Streak & Points & Accuracy */}
               <div className="stat-card streak-card">
                 <div className="stat-icon">🔥</div>
                 <div className="stat-value">{stats.streak || 0}</div>
@@ -43,13 +41,50 @@ const UserStats = ({ isOpen, onClose }) => {
             </div>
 
             <div className="badges-section">
-              <h3>🎖️ Mes Badges</h3>
+              {/* 👇 MODIFICATION : Le conteneur de l'icône est maintenant DANS le h3 */}
+              <div className="badges-section-header">
+                <h3>
+                  🎖️ Mes Badges
+                  <div className="badge-info">
+                    <div className="badge-info-icon">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                        width="12"
+                        height="12"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </div>
+                    <div className="badge-tooltip">
+                      <h4>Tous les Badges</h4>
+                      <ul className="badge-tooltip-list">
+                        {Object.values(BADGE_DEFINITIONS).map((badge) => (
+                          <li key={badge.id} className="badge-tooltip-item">
+                            <span className="badge-tooltip-name">
+                              {badge.name}
+                            </span>
+                            <span className="badge-tooltip-desc">
+                              {badge.description}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </h3>
+              </div>
+
               {stats.badges && stats.badges.length > 0 ? (
                 <div className="badges-grid">
-                  {/* 👇 MODIFICATION : On utilise BADGE_DEFINITIONS */}
                   {stats.badges.map((badgeId) => {
                     const badge = BADGE_DEFINITIONS[badgeId];
-                    if (!badge) return null; // Sécurité si un badge n'est pas défini
+                    if (!badge) return null;
                     return (
                       <div
                         key={badgeId}
@@ -69,7 +104,6 @@ const UserStats = ({ isOpen, onClose }) => {
                 </div>
               )}
             </div>
-            {/* ... autres sections de stats ... */}
           </div>
         )}
       </div>

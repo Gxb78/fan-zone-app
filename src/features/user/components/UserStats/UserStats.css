@@ -1,0 +1,117 @@
+/* src/features/user/components/UserStats/UserStats.css */
+
+.badges-section h3 {
+  margin: 0;
+  display: flex; /* Permet d'aligner l'icône avec le texte */
+  align-items: center;
+  gap: 6px; /* Espace entre le texte et l'icône */
+}
+
+.badges-section-header {
+  margin-bottom: 20px;
+}
+
+/* 👇 MODIFICATION : Le conteneur est maintenant inline et positionné relativement */
+.badge-info {
+  position: relative;
+  display: inline-flex;
+  /* On ajuste le positionnement vertical pour un effet "exposant" */
+  transform: translateY(-5px);
+}
+
+.badge-info-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 👇 MODIFICATION : Taille réduite */
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background-color: var(--background-dark);
+  border: 1px solid var(--border-color);
+  cursor: help;
+  transition: var(--transition);
+}
+
+.badge-info-icon svg {
+  color: var(--text-secondary);
+  transition: var(--transition);
+}
+
+.badge-info:hover .badge-info-icon {
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+.badge-info:hover .badge-info-icon svg {
+  color: var(--text-primary);
+}
+
+.badge-tooltip {
+  position: absolute;
+  /* 👇 MODIFICATION : Positionné au-dessus de la nouvelle taille de l'icône */
+  bottom: 160%;
+  left: 50%;
+  width: 300px;
+  background-color: var(--background-dark);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  z-index: 10;
+
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, 10px) scale(0.95);
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+}
+
+.badge-info:hover .badge-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) scale(1);
+}
+
+.badge-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -6px;
+  border-width: 6px;
+  border-style: solid;
+  border-color: var(--background-dark) transparent transparent transparent;
+}
+
+.badge-tooltip h4 {
+  margin: 0 0 10px 0;
+  font-size: 1.1em;
+  text-align: center;
+  color: var(--primary);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 8px;
+}
+
+.badge-tooltip-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.badge-tooltip-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.badge-tooltip-name {
+  font-weight: 700;
+  font-size: 1em;
+}
+
+.badge-tooltip-desc {
+  font-size: 0.85em;
+  color: var(--text-secondary);
+}
