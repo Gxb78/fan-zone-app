@@ -1,4 +1,4 @@
-/* src/App.css */
+/* src/app/App.css */
 
 /* ============ VARIABLES DE COULEUR "NUIT DE MATCH" ============ */
 :root {
@@ -106,6 +106,10 @@
     var(--text-secondary)
   );
   -webkit-background-clip: text;
+  /* L'avertissement "Propriété inconnue" pour text-fill-color est normal.
+    C'est une propriété non standard. La version préfixée -webkit- assure la compatibilité.
+    C'est un simple avertissement du linter, pas une erreur bloquante.
+  */
   -webkit-text-fill-color: transparent;
   background-clip: text;
   text-fill-color: transparent;

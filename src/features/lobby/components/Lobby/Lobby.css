@@ -45,7 +45,6 @@
   margin-top: 40px;
 }
 
-/* ... le reste du fichier est bon ... */
 .match-list-container {
   display: grid;
   grid-template-columns: 1fr;
@@ -83,18 +82,33 @@
   bottom: 0;
   background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
 }
-.match-competition,
-.fomo-counter {
+.match-competition {
   color: var(--text-primary);
   font-size: 0.9em;
   font-weight: 600;
   z-index: 1;
 }
-.fomo-counter {
-  background: rgba(0, 0, 0, 0.5);
-  padding: 4px 8px;
-  border-radius: 6px;
+
+/* 👇 NOUVEAU : Styles pour le badge de chaleur */
+.heat-badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.9em;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: var(--cold);
+  z-index: 1;
+  transition: var(--transition);
 }
+.heat-badge.warm {
+  background: var(--warm);
+  color: #000;
+}
+.heat-badge.hot {
+  background: var(--hot);
+  animation: pulse-live 2s infinite;
+}
+
 .match-body {
   padding: 15px;
 }
@@ -133,4 +147,17 @@
   border-radius: 6px;
   margin-top: 5px;
   font-size: 0.9em;
+}
+
+/* On ré-utilise l'animation du featured match */
+@keyframes pulse-live {
+  0%,
+  100% {
+    box-shadow: 0 0 15px rgba(255, 107, 53, 0.4);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(255, 107, 53, 0.8);
+    transform: scale(1.05);
+  }
 }

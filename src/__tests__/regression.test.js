@@ -1,7 +1,7 @@
 // src/__tests__/regression.test.js
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import { AppContent } from "../App";
+import { AppContent } from "../app/App"; // 👈 On importe depuis le nouveau chemin
 
 // On importe les fonctions mockées de Firebase pour les espionner
 import { signInUser, initializeUserStats } from "../services/firebase";
@@ -24,30 +24,29 @@ describe("🚨 Regression E2E Test - Happy Path", () => {
     expect(titleElement).toBeInTheDocument();
   });
 
-  // Test 2 : Le squelette de notre parcours utilisateur complet
-  test.skip("Le parcours utilisateur complet (Lobby > Match > Vote > Chat) fonctionne", async () => {
-    // Le ".skip" indique à Jest d'ignorer ce test pour le moment.
-    // Nous le réactiverons une fois les migrations terminées.
-
+  // 👇 Test 2 : On retire le ".skip" et on implémente la logique !
+  test("Le parcours utilisateur complet (Lobby > Match > Vote > Chat) fonctionne", async () => {
     render(
-      <MemoryRouter>
+      <MemoryRouter initialEntries={["/"]}>
         <AppContent />
       </MemoryRouter>
     );
 
     // 1. L'utilisateur arrive sur le lobby et voit un match
+    // Utiliser findBy est crucial car les données sont chargées de manière asynchrone
     const featuredMatch = await screen.findByText(/LE MATCH À LA UNE/i);
     expect(featuredMatch).toBeInTheDocument();
 
     // 2. L'utilisateur clique sur le match pour entrer dans la FanZone
-    fireEvent.click(featuredMatch);
+    // Nous cliquons sur le conteneur parent car le texte lui-même n'est peut-être pas un élément cliquable
+    fireEvent.click(featuredMatch.closest(".featured-match-container"));
 
-    // 3. Il attend que la page du match se charge et voit un sondage
-    const pollTitle = await screen.findByText(/Vainqueur du Match/i);
+    // 3. Il attend que la page du match se charge et voit le sondage principal
+    const pollTitle = await screen.findByText(/Résultat du Classique/i);
     expect(pollTitle).toBeInTheDocument();
 
     // 4. Il vote pour une équipe (par exemple, la première option)
-    const voteOption = await screen.findByText(/Paris SG/i); // Ou un autre nom d'équipe
+    const voteOption = await screen.findByText(/Paris SG/i);
     fireEvent.click(voteOption);
 
     // 5. Il envoie un message dans le chat
@@ -58,7 +57,10 @@ describe("🚨 Regression E2E Test - Happy Path", () => {
     fireEvent.click(screen.getByText(/Envoyer/i));
 
     // 6. Il vérifie que son message est bien apparu
-    const sentMessage = await screen.findByText(/Super match !/i);
-    expect(sentMessage).toBeInTheDocument();
+    // waitFor est utile ici pour attendre que l'UI se mette à jour après l'envoi
+    await waitFor(() => {
+      const sentMessage = screen.getByText(/Super match !/i);
+      expect(sentMessage).toBeInTheDocument();
+    });
   });
 });
