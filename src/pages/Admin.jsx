@@ -1,20 +1,18 @@
-// src/pages/Admin.jsx
 import React, { useState, useEffect } from "react";
-import AddMatchForm from "../components/AddMatchForm";
-import AddPollForm from "../components/AddPollForm";
-// 👇 On importe notre nouvelle fonction de suppression
-import { getAllMatches, deleteMatch } from "../services/firebase";
+// 👇 Imports mis à jour
+import AddMatchForm from "@/features/admin/components/AddMatchForm";
+import AddPollForm from "@/features/admin/components/AddPollForm";
+import { getAllMatches, deleteMatch } from "@/services/firebase";
 
+// ... Le reste du composant est identique
 const Admin = () => {
   const [matches, setMatches] = useState([]);
   const [selectedMatchId, setSelectedMatchId] = useState("");
 
-  // Cet effet charge les matchs au chargement de la page
   useEffect(() => {
     const fetchMatches = async () => {
       const allMatches = await getAllMatches();
       setMatches(allMatches);
-      // On s'assure qu'un match est présélectionné dans le dropdown s'il y en a
       if (allMatches.length > 0) {
         setSelectedMatchId(allMatches[0].id);
       }
@@ -22,17 +20,14 @@ const Admin = () => {
     fetchMatches();
   }, []);
 
-  // 👇 La fonction qui sera appelée au clic sur le bouton "Supprimer"
   const handleDeleteMatch = async (matchIdToDelete) => {
-    // On demande toujours confirmation pour une action aussi dangereuse !
     if (
       window.confirm(
-        `Êtes-vous sûr de vouloir supprimer ce match ?\nToutes les données (sondages, chats) seront perdues à jamais !`
+        `Êtes-vous sûr de vouloir supprimer ce match ? Toutes les données seront perdues !`
       )
     ) {
       try {
         await deleteMatch(matchIdToDelete);
-        // On met à jour la liste des matchs dans l'état pour que la page se rafraîchisse
         setMatches(matches.filter((match) => match.id !== matchIdToDelete));
         alert("Match supprimé avec succès !");
       } catch (error) {
@@ -53,9 +48,7 @@ const Admin = () => {
       >
         Dashboard Admin
       </h2>
-
       <AddMatchForm />
-
       <div className="admin-section">
         <h2>Ajouter un sondage à un match existant</h2>
         <select
@@ -73,8 +66,6 @@ const Admin = () => {
         </select>
         {selectedMatchId && <AddPollForm matchId={selectedMatchId} />}
       </div>
-
-      {/* 👇 NOTRE NOUVELLE SECTION DE GESTION DES MATCHS 👇 */}
       <div className="admin-section">
         <h2>Gérer les Matchs Existants</h2>
         <div className="admin-match-list">
@@ -93,7 +84,7 @@ const Admin = () => {
               </div>
             ))
           ) : (
-            <p>Aucun match dans la base de données pour le moment.</p>
+            <p>Aucun match dans la base de données.</p>
           )}
         </div>
       </div>

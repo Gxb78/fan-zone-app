@@ -1,14 +1,14 @@
 // src/components/PollCard.jsx
 import React from "react";
 import confetti from "canvas-confetti"; // 👈 On importe la magie !
-import { votePoll, cancelVotePoll, getCurrentUser } from "../../../../services/firebase";
+import { votePoll, cancelVotePoll, getCurrentUser } from "@/services/firebase";
 import {
   calculateHeatScore,
   getHeatEmoji,
   getHeatClass,
   isControversialOpinion,
-} from "../../../../utils/helpers";
-import CommentsSection from "../../../../components/CommentsSection";
+} from "@/utils/helpers";
+import CommentsSection from "../CommentsSection/CommentsSection";
 import "./PollCard.css";
 
 // ✨ Quand l'utilisateur vote, on déclenche une animation !

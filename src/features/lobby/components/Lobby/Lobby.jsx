@@ -1,22 +1,22 @@
 import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-// On importe nos nouveaux hooks et composants avec les alias
 import { useMatches } from "@/features/lobby/hooks/useMatches";
-import FeaturedMatch from "@/components/FeaturedMatch";
-import HotPolls from "@/components/HotPolls";
-import LiveCommentaryFeed from "@/components/LiveCommentaryFeed";
-import SportSelector from "@/components/SportSelector";
-import MatchFilters from "@/components/MatchFilters";
+// 👇 Imports mis à jour
+import FeaturedMatch from "@/features/lobby/components/FeaturedMatch/FeaturedMatch";
+import HotPolls from "@/features/lobby/components/HotPolls/HotPolls";
+import LiveCommentaryFeed from "@/features/lobby/components/LiveCommentaryFeed/LiveCommentaryFeed";
+import SportSelector from "@/features/lobby/components/SportSelector/SportSelector";
+import MatchFilters from "@/features/lobby/components/MatchFilters/MatchFilters";
 import { getMatchTimeStatus } from "@/utils/helpers";
-import "./Lobby.css"; // L'import CSS est maintenant local
+import "./Lobby.css";
 
+// ... Le reste du composant est identique
 const Lobby = () => {
   const [selectedSport, setSelectedSport] = useState("football");
   const [selectedLeague, setSelectedLeague] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
   const navigate = useNavigate();
 
-  // 👇 Toute la complexité de la récupération de données est maintenant ici !
   const { matches: allMatches, loading, error } = useMatches(selectedSport);
 
   const handleSelectMatch = (match, sportKey) => {
@@ -37,8 +37,10 @@ const Lobby = () => {
       const orderA = statusOrder[a.status] || 99;
       const orderB = statusOrder[b.status] || 99;
       if (orderA !== orderB) return orderA - orderB;
-      if (a.status === "SCHEDULED") return new Date(a.date) - new Date(b.date);
-      if (a.status === "FINISHED") return new Date(b.date) - new Date(a.date);
+      if (a.status === "SCHEDULED")
+        return new Date(a.date).getTime() - new Date(b.date).getTime();
+      if (a.status === "FINISHED")
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
       return 0;
     });
 

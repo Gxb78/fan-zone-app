@@ -1,12 +1,11 @@
-// src/components/FeaturedMatch.jsx
 import React from "react";
-// 👇 On importe notre fonction intelligente !
-import { getMatchTimeStatus } from "../utils/helpers";
+// 👇 Import corrigé avec l'alias
+import { getMatchTimeStatus } from "@/utils/helpers";
 import "./FeaturedMatch.css";
 
 const FeaturedMatch = ({ match, onSelectMatch }) => {
+  // ... (le reste du composant est identique)
   if (!match) return null;
-
   return (
     <div
       className="featured-match-container"
@@ -29,7 +28,6 @@ const FeaturedMatch = ({ match, onSelectMatch }) => {
           </div>
           <div className="match-info-featured">
             <div className="vs-featured">VS</div>
-            {/* ✅ LA CORRECTION MAGIQUE EST ICI ! On utilise notre helper. */}
             <div className="time-featured">{getMatchTimeStatus(match)}</div>
             <div className="competition-featured">{match.competition}</div>
           </div>

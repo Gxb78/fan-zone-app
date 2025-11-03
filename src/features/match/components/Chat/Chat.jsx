@@ -6,7 +6,7 @@ import {
 } from "@/services/firebase";
 import { useChatSubscription } from "../../hooks/useChatSubscription";
 import { timeAgo } from "@/utils/helpers";
-import MessageReactions from "@/components/MessageReactions";
+import MessageReactions from "../MessageReactions/MessageReactions";
 import "./Chat.css";
 
 const Chat = ({ matchId, chatId, featuredPollData }) => {

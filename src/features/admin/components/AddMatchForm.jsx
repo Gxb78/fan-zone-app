@@ -1,11 +1,11 @@
-// src/components/AddMatchForm.jsx
 import React, { useState } from "react";
-import { TEAMS } from "../data/teamData";
-import { addMatch } from "../services/firebase";
+// 👇 Imports corrigés avec les alias
+import { TEAMS } from "@/data/teamData";
+import { addMatch } from "@/services/firebase";
 
 const AddMatchForm = () => {
+  // ... (le reste du composant est identique)
   const [sport, setSport] = useState("football");
-  // On initialise avec les bonnes valeurs par défaut
   const [teamA, setTeamA] = useState(TEAMS.football[0].name);
   const [teamB, setTeamB] = useState(TEAMS.football[1].name);
   const [competition, setCompetition] = useState("Ligue 1");
@@ -18,15 +18,12 @@ const AddMatchForm = () => {
       alert("Remplis tous les champs stp !");
       return;
     }
-
     const teamAData = TEAMS[sport].find((t) => t.name === teamA);
     const teamBData = TEAMS[sport].find((t) => t.name === teamB);
-
     if (!teamAData || !teamBData) {
       alert("Une des équipes sélectionnées n'est pas valide.");
       return;
     }
-
     const matchData = {
       sportKey: sport,
       teamA: teamAData.name,
@@ -39,7 +36,6 @@ const AddMatchForm = () => {
       usersEngaged: 0,
       polls: [],
     };
-
     try {
       await addMatch(matchData);
       alert("Match ajouté avec succès ! 🔥");
@@ -49,29 +45,22 @@ const AddMatchForm = () => {
     }
   };
 
-  // 👇 LA CORRECTION EST ICI, DANS CETTE FONCTION 👇
   const handleSportChange = (e) => {
     const newSport = e.target.value;
     setSport(newSport);
-
-    const newTeamList = TEAMS[newSport] || []; // On récupère la liste, ou un tableau vide si elle n'existe pas
-
-    // On vérifie qu'on a bien au moins deux équipes avant de présélectionner
+    const newTeamList = TEAMS[newSport] || [];
     if (newTeamList.length >= 2) {
       setTeamA(newTeamList[0].name);
       setTeamB(newTeamList[1].name);
     } else if (newTeamList.length === 1) {
-      // S'il n'y a qu'une équipe, on la met en A et on vide B
       setTeamA(newTeamList[0].name);
       setTeamB("");
     } else {
-      // S'il n'y a aucune équipe, on vide les deux
       setTeamA("");
       setTeamB("");
     }
   };
-
-  const teamList = TEAMS[sport] || []; // On s'assure que teamList est toujours un tableau
+  const teamList = TEAMS[sport] || [];
 
   return (
     <div className="add-match-form-container">
@@ -83,7 +72,6 @@ const AddMatchForm = () => {
           <option value="tennis">Tennis</option>
           <option value="f1">Formule 1</option>
         </select>
-
         <select value={teamA} onChange={(e) => setTeamA(e.target.value)}>
           {teamList.map((team) => (
             <option key={team.name} value={team.name}>
@@ -91,7 +79,6 @@ const AddMatchForm = () => {
             </option>
           ))}
         </select>
-
         <select value={teamB} onChange={(e) => setTeamB(e.target.value)}>
           {teamList.map((team) => (
             <option key={team.name} value={team.name}>
@@ -99,7 +86,6 @@ const AddMatchForm = () => {
             </option>
           ))}
         </select>
-
         <input
           type="text"
           value={competition}
@@ -118,7 +104,6 @@ const AddMatchForm = () => {
           onChange={(e) => setBgImage(e.target.value)}
           placeholder="URL Image de fond (optionnel)"
         />
-
         <button type="submit">Créer le Match</button>
       </form>
     </div>

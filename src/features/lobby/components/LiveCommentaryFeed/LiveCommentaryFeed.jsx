@@ -1,20 +1,19 @@
-// src/components/LiveCommentaryFeed.jsx
 import React, { useMemo } from "react";
-import { calculateCommentHeatScore } from "../utils/helpers"; // On importe notre calculateur
+// 👇 Import corrigé avec l'alias
+import { calculateCommentHeatScore } from "@/utils/helpers";
 import "./LiveCommentaryFeed.css";
 
 const LiveCommentaryFeed = ({ matches, onSelectMatch }) => {
+  // ... (le reste du composant est identique)
   const hotComments = useMemo(() => {
     const allComments = matches.flatMap((match) =>
       (match.polls || []).flatMap((poll) =>
         (poll.seedComments || []).map((comment) => {
-          // On ajoute le heat score à chaque commentaire
           const heatScore = calculateCommentHeatScore(comment);
           return { ...comment, match, heatScore };
         })
       )
     );
-    // On trie par heat score et on prend les 6 meilleurs !
     return allComments.sort((a, b) => b.heatScore - a.heatScore).slice(0, 6);
   }, [matches]);
 

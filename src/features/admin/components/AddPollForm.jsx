@@ -1,11 +1,11 @@
-// src/components/AddPollForm.jsx
 import React, { useState } from "react";
-import { addPollToMatch } from "../services/firebase";
+// 👇 Import corrigé avec l'alias
+import { addPollToMatch } from "@/services/firebase";
 
 const AddPollForm = ({ matchId }) => {
+  // ... (le reste du composant est identique)
   const [title, setTitle] = useState("");
   const [question, setQuestion] = useState("");
-  // On gère maintenant un tableau de chaînes de caractères simple pour l'UI
   const [options, setOptions] = useState(["", ""]);
 
   const handleOptionChange = (index, value) => {
@@ -22,7 +22,6 @@ const AddPollForm = ({ matchId }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const validOptions = options.filter((opt) => opt.trim() !== "");
     if (
       title.trim() === "" ||
@@ -32,22 +31,17 @@ const AddPollForm = ({ matchId }) => {
       alert("Il faut un titre, une question et au moins 2 options valides !");
       return;
     }
-
-    // 👇 MODIFICATION ICI : On transforme notre tableau simple en structure complexe
     const optionsForFirebase = validOptions.map((text, index) => ({
-      // On crée une clé simple, ex: "option_1", "option_2"
       key: `option_${index + 1}`,
       text: text,
       order: index,
     }));
-
     const newPoll = {
       id: title.toLowerCase().replace(/\s/g, "_").slice(0, 20),
       title,
       polarizingQuestion: question,
-      options: optionsForFirebase, // On envoie la nouvelle structure
+      options: optionsForFirebase,
     };
-
     try {
       await addPollToMatch(matchId, newPoll);
       alert("Sondage ajouté ! Actualise la page du match pour le voir.");

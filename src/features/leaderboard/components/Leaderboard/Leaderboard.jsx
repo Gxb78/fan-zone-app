@@ -1,39 +1,15 @@
-// src/components/Leaderboard.jsx
-import React, { useEffect, useState } from "react";
-import { getLeaderboard } from "../services/firebase";
+import React from "react";
+import { useLeaderboard } from "../../hooks/useLeaderboard";
+import "./Leaderboard.css"; // Assurez-vous d'avoir un fichier CSS
 
-/**
- * Composant qui affiche le classement (top 10) des meilleurs utilisateurs
- * Basé sur les points totaux
- */
 const Leaderboard = ({ isOpen, onClose }) => {
-  const [leaderboardData, setLeaderboardData] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  // ===== RÉCUPÉRATION DU LEADERBOARD =====
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const fetchLeaderboard = async () => {
-      setLoading(true);
-      try {
-        const data = await getLeaderboard(10);
-        setLeaderboardData(data);
-      } catch (error) {
-        console.error("Erreur leaderboard:", error);
-      }
-      setLoading(false);
-    };
-
-    fetchLeaderboard();
-  }, [isOpen]);
+  const { leaderboardData, loading } = useLeaderboard(isOpen);
 
   if (!isOpen) return null;
 
   return (
     <div className="leaderboard-modal-overlay" onClick={onClose}>
       <div className="leaderboard-modal" onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
         <div className="leaderboard-header">
           <h2>🏆 Leaderboard</h2>
           <button className="close-btn" onClick={onClose}>
@@ -55,8 +31,6 @@ const Leaderboard = ({ isOpen, onClose }) => {
                   <th className="rank-col">Rang</th>
                   <th className="name-col">Joueur</th>
                   <th className="points-col">Points</th>
-                  <th className="streak-col">Streak</th>
-                  <th className="accuracy-col">Précision</th>
                 </tr>
               </thead>
               <tbody>
@@ -72,22 +46,12 @@ const Leaderboard = ({ isOpen, onClose }) => {
                     </td>
                     <td className="name-col">
                       <span className="user-name">
-                        User {user.userId.substring(0, 8)}
+                        Fan_{user.userId.substring(0, 8)}
                       </span>
                     </td>
                     <td className="points-col">
                       <span className="points-value">
                         ⭐ {user.points || 0}
-                      </span>
-                    </td>
-                    <td className="streak-col">
-                      <span className="streak-value">
-                        🔥 {user.streak || 0} jours
-                      </span>
-                    </td>
-                    <td className="accuracy-col">
-                      <span className="accuracy-value">
-                        🎯 {user.accuracy || 0}%
                       </span>
                     </td>
                   </tr>

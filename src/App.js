@@ -1,17 +1,18 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import React, { useState } from "react";
+
+// 👇 TOUS LES IMPORTS SONT MAINTENANT PROPRES ET POINTENT VERS LES FEATURES 👇
 import Lobby from "@/features/lobby/components/Lobby/Lobby";
-import MatchPage from "@/features/match/components/MatchPage/MatchPage"; // 👈 Ajoutez cette ligne
-import UserStats from "./components/UserStats";
-import Leaderboard from "./components/Leaderboard";
-import Admin from "./pages/Admin";
-import ErrorBoundary from "./components/ui/ErrorBoundary";
-// 👇 On importe notre nouveau composant Header en utilisant les alias !
+import MatchPage from "@/features/match/components/MatchPage/MatchPage";
+import UserStats from "@/features/user/components/UserStats/UserStats";
+// 👇 CORRECTION ICI : L'import est maintenant en minuscules, comme notre dossier
+import Leaderboard from "@/features/leaderboard/components/Leaderboard/Leaderboard";
+import Admin from "@/pages/Admin";
+import ErrorBoundary from "@/components/ui/ErrorBoundary";
 import Header from "@/components/layout/Header";
 import { useAuth } from "@/features/auth/hooks/useAuth";
-import "./App.css";
 
-// On importe le nouveau CSS pour le Header
+import "./App.css";
 import "@/components/layout/Header.css";
 
 export const AppContent = () => {
@@ -21,12 +22,10 @@ export const AppContent = () => {
   return (
     <div className="App">
       <div className="app-container">
-        {/* On remplace toute la navbar par notre composant Header */}
         <Header
           onOpenStats={() => setUserStatsOpen(true)}
           onOpenLeaderboard={() => setLeaderboardOpen(true)}
         />
-
         <div className="app-content">
           <ErrorBoundary>
             <Routes>
@@ -37,7 +36,6 @@ export const AppContent = () => {
           </ErrorBoundary>
         </div>
       </div>
-
       <UserStats
         isOpen={userStatsOpen}
         onClose={() => setUserStatsOpen(false)}
@@ -52,11 +50,9 @@ export const AppContent = () => {
 
 function App() {
   const { loading } = useAuth();
-
   if (loading) {
     return <div className="loading">Chargement de la Fan Zone...</div>;
   }
-
   return (
     <Router>
       <AppContent />
