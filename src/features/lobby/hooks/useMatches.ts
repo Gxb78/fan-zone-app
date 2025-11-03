@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react"; // 👈 Ajout de useCallback
 import type { Match } from "../types";
 import masterSportData from "@/data/masterSportData";
 import { generateRageBaitContent } from "@/services/aiContentGenerator";
+import { useCache } from "@/hooks/useCache"; // 👈 On importe notre nouveau hook
 
 const THESPORTSDB_KEY = "123";
 const TOP_LEAGUES = [
@@ -13,105 +14,97 @@ const TOP_LEAGUES = [
 ];
 
 /**
- * Hook pour récupérer et gérer la liste des matchs.
- * Gère le chargement, les erreurs et le fallback sur les données locales.
+ * Hook pour récupérer et gérer la liste des matchs, maintenant avec un cache de session.
  */
 export function useMatches(sport: string) {
-  const [matches, setMatches] = useState<Match[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
+  // 👇 NOUVEAU : La logique de fetch est maintenant encapsulée dans un useCallback
+  const fetcher = useCallback(async () => {
     if (sport !== "football") {
-      setMatches([]);
-      setLoading(false);
-      return;
+      return [];
     }
 
-    const fetchMatches = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        let allApiMatches: any[] = [];
+    try {
+      let allApiMatches: any[] = [];
 
-        for (const league of TOP_LEAGUES) {
-          const [nextResponse, pastResponse] = await Promise.all([
-            fetch(
-              `/api-football/${THESPORTSDB_KEY}/eventsnextleague.php?id=${league.id}`
-            ),
-            fetch(
-              `/api-football/${THESPORTSDB_KEY}/eventspastleague.php?id=${league.id}`
-            ),
-          ]);
+      for (const league of TOP_LEAGUES) {
+        const [nextResponse, pastResponse] = await Promise.all([
+          fetch(
+            `/api-football/${THESPORTSDB_KEY}/eventsnextleague.php?id=${league.id}`
+          ),
+          fetch(
+            `/api-football/${THESPORTSDB_KEY}/eventspastleague.php?id=${league.id}`
+          ),
+        ]);
 
-          if (nextResponse.ok) {
-            const data = await nextResponse.json();
-            if (data.events) allApiMatches.push(...data.events);
-          }
-          if (pastResponse.ok) {
-            const data = await pastResponse.json();
-            if (data.events) allApiMatches.push(...data.events);
-          }
-          await new Promise((res) => setTimeout(res, 200));
+        if (nextResponse.ok) {
+          const data = await nextResponse.json();
+          if (data.events) allApiMatches.push(...data.events);
         }
-
-        if (allApiMatches.length === 0) {
-          throw new Error("L'API n'a retourné aucun match.");
+        if (pastResponse.ok) {
+          const data = await pastResponse.json();
+          if (data.events) allApiMatches.push(...data.events);
         }
+        await new Promise((res) => setTimeout(res, 200));
+      }
 
-        const uniqueMatches = Array.from(
-          new Map(allApiMatches.map((match) => [match.idEvent, match])).values()
-        );
-        const fetchedMatches: Match[] = uniqueMatches.map((match: any) => {
-          const matchDate = match.strTime
-            ? `${match.dateEvent}T${match.strTime}Z`
-            : match.dateEvent;
-          const isFinished =
-            match.intHomeScore !== null && match.intAwayScore !== null;
-          const rageBaitData = generateRageBaitContent({
-            teamA: match.strHomeTeam,
-            teamB: match.strAwayTeam,
-          });
+      if (allApiMatches.length === 0) {
+        throw new Error("L'API n'a retourné aucun match.");
+      }
 
-          // 👇 MODIFICATION : On rend le nombre de fans stable et prédictible
-          const deterministicRandom =
-            parseInt(match.idEvent.slice(-4), 16) || 1000;
-          const usersEngaged = match.intSpectators
-            ? parseInt(match.intSpectators.replace(/,/g, ""), 10)
-            : (deterministicRandom % 4000) + 500;
-
-          return {
-            id: match.idEvent,
-            competition: match.strLeague,
-            date: matchDate,
-            status: isFinished ? "FINISHED" : "SCHEDULED",
-            scoreA: match.intHomeScore,
-            scoreB: match.intAwayScore,
-            teamA: match.strHomeTeam,
-            teamB: match.strAwayTeam,
-            logoA: match.strHomeTeamBadge,
-            logoB: match.strAwayTeamBadge,
-            bgImage:
-              match.strThumb ||
-              `https://picsum.photos/seed/${match.idEvent}/800/600`,
-            sportKey: "football",
-            polls: rageBaitData.polls,
-            usersEngaged: usersEngaged,
-          };
+      const uniqueMatches = Array.from(
+        new Map(allApiMatches.map((match) => [match.idEvent, match])).values()
+      );
+      const fetchedMatches: Match[] = uniqueMatches.map((match: any) => {
+        const matchDate = match.strTime
+          ? `${match.dateEvent}T${match.strTime}Z`
+          : match.dateEvent;
+        const isFinished =
+          match.intHomeScore !== null && match.intAwayScore !== null;
+        const rageBaitData = generateRageBaitContent({
+          teamA: match.strHomeTeam,
+          teamB: match.strAwayTeam,
         });
 
-        setMatches(fetchedMatches);
-      } catch (err: any) {
-        setError(err.message);
-        console.warn(`API a échoué. Fallback local.`, err.message);
-        setMatches((masterSportData.football?.matches as Match[]) || []);
-      } finally {
-        setLoading(false);
-      }
-    };
+        const deterministicRandom =
+          parseInt(match.idEvent.slice(-4), 16) || 1000;
+        const usersEngaged = match.intSpectators
+          ? parseInt(match.intSpectators.replace(/,/g, ""), 10)
+          : (deterministicRandom % 4000) + 500;
 
-    fetchMatches();
-  }, [sport]);
+        return {
+          id: match.idEvent,
+          competition: match.strLeague,
+          date: matchDate,
+          status: isFinished ? "FINISHED" : "SCHEDULED",
+          scoreA: match.intHomeScore,
+          scoreB: match.intAwayScore,
+          teamA: match.strHomeTeam,
+          teamB: match.strAwayTeam,
+          logoA: match.strHomeTeamBadge,
+          logoB: match.strAwayTeamBadge,
+          bgImage:
+            match.strThumb ||
+            `https://picsum.photos/seed/${match.idEvent}/800/600`,
+          sportKey: "football",
+          polls: rageBaitData.polls,
+          usersEngaged: usersEngaged,
+        };
+      });
 
-  return { matches, loading, error };
+      return fetchedMatches;
+    } catch (err: any) {
+      console.warn(`API a échoué. Fallback local.`, err.message);
+      // En cas d'erreur de fetch, on utilise les données locales
+      return (masterSportData.football?.matches as Match[]) || [];
+    }
+  }, [sport]); // Le fetcher ne sera recréé que si le sport change
+
+  // 👇 MODIFICATION : On utilise notre hook de cache !
+  const {
+    data: matches,
+    loading,
+    error,
+  } = useCache(`matches_${sport}`, fetcher, 60000 * 5); // Cache de 5 minutes
+
+  return { matches: matches || [], loading, error };
 }

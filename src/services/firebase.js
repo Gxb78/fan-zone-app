@@ -1,6 +1,5 @@
 // src/services/firebase.js
 
-// Import Firebase v9 Modular
 import { initializeApp } from "firebase/app";
 import { getAuth, signInAnonymously, onAuthStateChanged } from "firebase/auth";
 import {
@@ -20,9 +19,11 @@ import {
   limit,
   updateDoc,
   increment,
+  arrayUnion,
 } from "firebase/firestore";
 
 import { generateRageBaitContent } from "./aiContentGenerator";
+import { checkNewBadges } from "@/data/badgeData";
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -35,7 +36,6 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
-// 👇 MODIFICATION ICI : On exporte 'auth' pour le rendre disponible
 export const auth = getAuth(app);
 
 // ===============================================
@@ -57,13 +57,10 @@ export function getCurrentUser() {
   return auth.currentUser;
 }
 
-// ... (le reste du fichier ne change pas) ...
-
 // ===============================================
 // FONCTION UTILITAIRE POUR CRÉER LES SONDAGES (via l'IA)
 // ===============================================
 async function addDefaultPollsToMatch(matchData) {
-  // ... (Le reste de cette fonction est déjà bon, on ne change rien)
   const { polls } = generateRageBaitContent(matchData);
   const { id: matchId, teamA, teamB } = matchData;
 
@@ -122,7 +119,6 @@ async function addDefaultPollsToMatch(matchData) {
 // MATCHES & POLLS 🗳️
 // ===============================================
 export async function getOrCreateMatch(apiMatch) {
-  // ... (Cette fonction reste inchangée)
   const matchId = String(apiMatch.id);
   const matchRef = doc(db, "matches", matchId);
   const matchSnap = await getDoc(matchRef);
@@ -174,7 +170,7 @@ export function subscribeToPoll(pollDbPath, onData) {
 
 export async function votePoll(pollDbPath, userChoice, userId) {
   const pollRef = doc(db, ...pollDbPath);
-  let isNewVote = false; // On va tracker si c'est un premier vote
+  let isNewVote = false;
 
   await runTransaction(db, async (transaction) => {
     const pollDoc = await transaction.get(pollRef);
@@ -186,7 +182,7 @@ export async function votePoll(pollDbPath, userChoice, userId) {
     const voters = pollData.voters || {};
     const previousVote = voters[userId];
 
-    isNewVote = !previousVote; // C'est un nouveau vote s'il n'y avait pas de vote précédent
+    isNewVote = !previousVote;
 
     if (previousVote && previousVote !== userChoice) {
       votes[previousVote] = (votes[previousVote] || 1) - 1;
@@ -198,14 +194,14 @@ export async function votePoll(pollDbPath, userChoice, userId) {
     transaction.update(pollRef, { votes, voters, lastActivity: Date.now() });
   });
 
-  // ✨ NOUVEAUTÉ ENGAGEMENT : On met à jour les stats de l'utilisateur APRÈS la transaction
   if (isNewVote) {
     await updateUserStatsOnVote(userId);
   }
+
+  return { isNewVote };
 }
 
 export async function cancelVotePoll(pollDbPath, userId) {
-  // ... (Cette fonction reste inchangée)
   const pollRef = doc(db, ...pollDbPath);
   await runTransaction(db, async (transaction) => {
     const pollDoc = await transaction.get(pollRef);
@@ -223,17 +219,15 @@ export async function cancelVotePoll(pollDbPath, userId) {
 }
 
 // ===============================================
-// ADMIN & CHAT & STATS
+// ADMIN, CHAT & STATS
 // ===============================================
 export async function getAllMatches() {
-  // ... (inchangé)
   const q = query(collection(db, "matches"));
   const snapshot = await getDocs(q);
   return snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
 
 export async function addMatch(matchData) {
-  // ... (inchangé)
   const matchId = `${matchData.teamA.replace(
     /\s/g,
     ""
@@ -244,19 +238,14 @@ export async function addMatch(matchData) {
 }
 
 export async function addPollToMatch(matchId, newPoll) {
-  // ... (inchangé)
   if (!matchId || !newPoll.id) throw new Error("Données du sondage invalides.");
   const pollRef = doc(db, "matches", matchId, "polls", newPoll.id);
   await setDoc(pollRef, { ...newPoll, votes: {}, voters: {} });
 }
 
 export async function deleteMatch(matchId) {
-  // ... (inchangé)
   if (!matchId)
     throw new Error("Un ID de match est requis pour la suppression.");
-  console.log(
-    `🗑️ Début du processus de suppression pour le match ${matchId}...`
-  );
   try {
     const pollsRef = collection(db, "matches", matchId, "polls");
     const pollsSnapshot = await getDocs(pollsRef);
@@ -264,9 +253,6 @@ export async function deleteMatch(matchId) {
       await deleteDoc(doc(db, "matches", matchId, "polls", pollDoc.id));
     }
     await deleteDoc(doc(db, "matches", matchId));
-    console.log(
-      `✅ Match ${matchId} et ses données ont été supprimés avec succès.`
-    );
   } catch (error) {
     console.error(
       `Erreur critique lors de la suppression du match ${matchId}:`,
@@ -277,7 +263,6 @@ export async function deleteMatch(matchId) {
 }
 
 export async function sendMessage(matchId, chatId, messageData) {
-  // ... (inchangé)
   const messagesPath = `matches/${matchId}/chats/${chatId}/messages`;
   const chatCollectionRef = collection(db, messagesPath);
   await addDoc(chatCollectionRef, {
@@ -286,20 +271,20 @@ export async function sendMessage(matchId, chatId, messageData) {
   });
 }
 
+// 👇 CORRECTION : La fonction manquante est réintégrée et exportée ici
 export function subscribeToUserStats(userId, onData) {
-  // ... (inchangé)
   const userStatsRef = doc(db, "userStats", userId);
   return onSnapshot(userStatsRef, (snapshot) => {
     if (snapshot.exists()) {
       onData(snapshot.data());
     } else {
-      onData({ points: 0, badges: [], accuracy: 0 });
+      // Si aucune stat n'existe, on fournit un objet par défaut
+      onData({ points: 0, badges: [], accuracy: 0, totalVotes: 0, streak: 0 });
     }
   });
 }
 
 export async function initializeUserStats(userId) {
-  // ... (inchangé)
   const userStatsRef = doc(db, "userStats", userId);
   const docSnap = await getDoc(userStatsRef);
   if (!docSnap.exists()) {
@@ -314,28 +299,49 @@ export async function initializeUserStats(userId) {
   }
 }
 
-// ✨ NOUVELLE FONCTION D'ENGAGEMENT
-// Met à jour les stats d'un utilisateur après un vote
 async function updateUserStatsOnVote(userId) {
   if (!userId) return;
   const userStatsRef = doc(db, "userStats", userId);
+
   try {
-    // On incrémente le total des votes et on ajoute des points
-    await updateDoc(userStatsRef, {
-      totalVotes: increment(1),
-      points: increment(5), // +5 points pour chaque vote
+    await runTransaction(db, async (transaction) => {
+      const statsDoc = await transaction.get(userStatsRef);
+      if (!statsDoc.exists()) {
+        console.error(
+          "Document de statistiques introuvable pour l'utilisateur."
+        );
+        return;
+      }
+
+      const currentStats = statsDoc.data();
+      const newTotalVotes = (currentStats.totalVotes || 0) + 1;
+
+      const newStatsData = {
+        totalVotes: increment(1),
+        points: increment(5),
+      };
+
+      const potentialNewBadges = checkNewBadges({
+        ...currentStats,
+        totalVotes: newTotalVotes,
+      });
+
+      if (potentialNewBadges.length > 0) {
+        newStatsData.badges = arrayUnion(...potentialNewBadges);
+        console.log(`🏆 Nouveaux badges pour ${userId}:`, potentialNewBadges);
+      }
+
+      transaction.update(userStatsRef, newStatsData);
     });
   } catch (error) {
     console.error(
       `Impossible de mettre à jour les stats pour l'utilisateur ${userId}:`,
       error
     );
-    // On ne bloque pas l'UI pour ça, c'est une opération en arrière-plan.
   }
 }
 
 export async function getLeaderboard(limitCount = 10) {
-  // ... (inchangé)
   const q = query(
     collection(db, "userStats"),
     orderBy("points", "desc"),
@@ -364,7 +370,6 @@ export async function addReactionToMessage(
   await runTransaction(db, async (transaction) => {
     const messageDoc = await transaction.get(messageRef);
     if (!messageDoc.exists()) {
-      // 👇 CORRECTION ICI 👇
       throw new Error("Ce message n'existe pas !");
     }
     const reactionField = `reactions.${reactionEmoji}`;

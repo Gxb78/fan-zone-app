@@ -1,0 +1,29 @@
+/* src/features/match/components/PointsAnimation/PointsAnimation.css */
+
+.points-animation-floater {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: var(--primary);
+  color: var(--text-primary);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 1.2em;
+  font-weight: 700;
+  z-index: 10;
+  animation: floatUp 1.5s ease-out forwards;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  white-space: nowrap;
+}
+
+@keyframes floatUp {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -150px) scale(0.8);
+  }
+}

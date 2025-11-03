@@ -1,6 +1,5 @@
-// src/components/PollCard.jsx
-import React from "react";
-import confetti from "canvas-confetti"; // 👈 On importe la magie !
+import React, { useState, useRef, useCallback } from "react"; // 👈 Ajout de useRef et useCallback
+import confetti from "canvas-confetti";
 import { votePoll, cancelVotePoll, getCurrentUser } from "@/services/firebase";
 import {
   calculateHeatScore,
@@ -9,20 +8,35 @@ import {
   isControversialOpinion,
 } from "@/utils/helpers";
 import CommentsSection from "../CommentsSection/CommentsSection";
+import PointsAnimation from "../PointsAnimation/PointsAnimation";
 import "./PollCard.css";
 
-// ✨ Quand l'utilisateur vote, on déclenche une animation !
-const celebrateVote = () => {
-  confetti({
-    particleCount: 100,
-    spread: 70,
-    origin: { y: 0.6 },
-    colors: ["#ff6b35", "#764ba2", "#ffffff"],
-  });
-};
+// ✨ On retire la fonction globale d'ici
 
 const PollCard = ({ poll, match, onReply }) => {
   const user = getCurrentUser();
+  const [showPoints, setShowPoints] = useState(false);
+
+  // 👇 NOUVEAU : Une référence pour notre canvas local
+  const canvasRef = useRef(null);
+
+  // 👇 NOUVEAU : La fonction de célébration est maintenant à l'intérieur du composant
+  const celebrate = useCallback(() => {
+    if (canvasRef.current) {
+      // On crée une instance de confetti liée à notre canvas
+      const myConfetti = confetti.create(canvasRef.current, {
+        resize: true,
+        useWorker: true,
+      });
+      // On lance l'animation, centrée sur le canvas
+      myConfetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }, // L'origine est relative au canvas, donc c'est parfait
+        colors: ["#ff6b35", "#764ba2", "#ffffff"],
+      });
+    }
+  }, []); // useCallback pour la performance
 
   const getPollDbPath = () => ["matches", String(match.id), "polls", poll.id];
 
@@ -36,8 +50,14 @@ const PollCard = ({ poll, match, onReply }) => {
 
   async function handleSelectAndVote(optionKey) {
     if (!user || userVote === optionKey) return;
-    await votePoll(getPollDbPath(), optionKey, user.uid);
-    celebrateVote(); // 👈 On appelle la fonction de célébration ici !
+
+    const { isNewVote } = await votePoll(getPollDbPath(), optionKey, user.uid);
+
+    if (isNewVote) {
+      celebrate(); // On appelle notre nouvelle fonction locale
+      setShowPoints(true);
+      setTimeout(() => setShowPoints(false), 1500);
+    }
   }
 
   async function handleCancelVote() {
@@ -51,6 +71,12 @@ const PollCard = ({ poll, match, onReply }) => {
 
   return (
     <div className={`poll-card ${userVote ? "voted" : "can-vote"}`}>
+      {/* 👇 NOUVEAU : Le canvas pour les confettis, positionné par-dessus le contenu */}
+      <canvas ref={canvasRef} className="confetti-canvas" />
+
+      {showPoints && <PointsAnimation points={5} />}
+
+      {/* ... Le reste du JSX est identique ... */}
       <div className="poll-header">
         {match && (
           <div className="match-context-header">

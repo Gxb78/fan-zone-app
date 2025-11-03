@@ -6,6 +6,18 @@
   border: 1px solid var(--border-color);
   margin-bottom: 25px;
   overflow: hidden;
+  position: relative;
+}
+
+/* 👇 NOUVEAU : Styles pour le canvas des confettis */
+.confetti-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; /* Très important : le canvas n'intercepte pas les clics */
+  z-index: 5;
 }
 
 .poll-header {
@@ -57,6 +69,11 @@
   background-color: rgba(255, 107, 53, 0.1);
 }
 
+.poll-card.can-vote .poll-option:active {
+  transform: scale(0.98);
+  background-color: rgba(255, 107, 53, 0.2);
+}
+
 /* Barre de progression en fond */
 .option-bar {
   position: absolute;
@@ -100,9 +117,7 @@
 }
 
 .controversial-badge {
-  background: var(
-    --secondary
-  ); /* Notre couleur spéciale pour les éléments rares */
+  background: var(--secondary);
   color: var(--text-primary);
   padding: 3px 8px;
   border-radius: 10px;
@@ -111,29 +126,28 @@
   flex-shrink: 0;
 }
 
-/* 👇 LA CORRECTION UX EST ICI ! 👇 */
 /* Style pour l'option que l'utilisateur a choisie */
 .poll-option.voted-for {
-  border-color: var(--primary); /* La bordure devient orange */
+  border-color: var(--primary);
   box-shadow: 0 0 15px rgba(255, 107, 53, 0.5);
 }
 
 .poll-option.voted-for .option-bar {
-  background-color: var(--primary); /* La barre devient orange plein */
+  background-color: var(--primary);
   opacity: 0.4;
+  animation: pulse-vote 0.6s ease-out;
 }
 
 .poll-option.voted-for .option-votes {
-  color: var(--primary); /* Le pourcentage devient orange */
+  color: var(--primary);
 }
 
-/* On grise les autres options après le vote */
 .poll-card.voted .poll-option:not(.voted-for) {
   opacity: 0.6;
   cursor: not-allowed;
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
-/* ... le reste du CSS est bon ... */
 .poll-footer {
   padding: 0 20px 20px 20px;
   text-align: center;
@@ -171,4 +185,19 @@
   color: var(--text-secondary);
   font-size: 0.8em;
   font-weight: 500;
+}
+
+@keyframes pulse-vote {
+  0% {
+    opacity: 0.4;
+    transform: scaleX(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scaleX(1.02);
+  }
+  100% {
+    opacity: 0.4;
+    transform: scaleX(1);
+  }
 }
