@@ -3,18 +3,19 @@
 .sport-selector-container {
   display: flex;
   gap: 10px;
-  margin-bottom: 25px;
-  background-color: var(--surface-dark);
   padding: 10px;
-  border-radius: var(--border-radius);
+  /* 👇 SUPPRESSION : On enlève le fond et la marge, gérés par le nouveau wrapper */
+  /* background-color: var(--surface-dark); */
+  /* margin-bottom: 25px; */
+  /* border-radius: var(--border-radius); */
 }
 
 .sport-selector-btn {
-  flex-grow: 1; /* Pour qu'ils prennent toute la largeur */
+  flex-grow: 1;
   padding: 12px;
   font-size: 1em;
   font-weight: 600;
-  border: 2px solid transparent; /* Pas de bordure par défaut */
+  border: 2px solid transparent;
   background-color: transparent;
   color: var(--text-secondary);
   border-radius: 8px;
@@ -22,14 +23,19 @@
   transition: var(--transition);
 }
 
-.sport-selector-btn:hover {
+.sport-selector-btn:hover:not(:disabled) {
   background-color: var(--background-dark);
   color: var(--text-primary);
 }
 
-/* C'EST LUI LA STAR ! Le style du bouton actif */
 .sport-selector-btn.active {
   background-color: var(--primary);
   color: var(--text-primary);
   box-shadow: 0 0 15px rgba(255, 107, 53, 0.5);
+}
+
+/* 👇 MODIFICATION : Style pour les sports désactivés */
+.sport-selector-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
 }

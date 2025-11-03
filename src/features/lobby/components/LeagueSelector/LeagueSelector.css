@@ -1,0 +1,130 @@
+/* src/features/lobby/components/LeagueSelector/LeagueSelector.css */
+
+.league-selector-container {
+  position: relative;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.4s ease-in-out, opacity 0.4s ease-in-out,
+    padding 0.4s ease-in-out;
+  background-color: var(--background-dark);
+  border-radius: 0 0 var(--border-radius) var(--border-radius);
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+}
+
+.league-selector-container.visible {
+  max-height: 80px; /* Hauteur fixe pour une ligne */
+  opacity: 1;
+  padding: 15px 10px;
+  border-top: 1px solid var(--border-color);
+}
+
+.league-selector-wrapper {
+  flex-grow: 1;
+  overflow-x: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+.league-selector-wrapper::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
+}
+
+.league-selector-inner {
+  display: flex;
+  flex-wrap: nowrap; /* Force la ligne unique */
+  gap: 8px;
+  padding: 0 5px; /* Petit espace pour ne pas coller les flèches */
+}
+
+.league-btn {
+  padding: 8px 14px;
+  font-size: 0.85em;
+  font-weight: 600;
+  border: 1px solid var(--border-color);
+  background-color: var(--surface-dark);
+  color: var(--text-secondary);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap; /* Empêche le texte du bouton de se couper */
+  flex-shrink: 0; /* Empêche les boutons de se réduire */
+}
+
+.league-btn:hover {
+  background-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.league-btn.active {
+  background-color: var(--primary);
+  color: var(--text-primary);
+  border-color: var(--primary);
+  box-shadow: 0 0 10px rgba(255, 107, 53, 0.4);
+}
+
+/* 👇 NOUVEAU : Styles pour les flèches */
+.scroll-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  background: var(--background-dark);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: var(--transition);
+}
+
+.scroll-arrow.left {
+  left: 10px;
+  transform: translateY(-50%) rotate(180deg); /* Tourne l'icône */
+}
+
+.scroll-arrow.right {
+  right: 10px;
+}
+
+.scroll-arrow.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.scroll-arrow:hover {
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+/* 👇 NOUVEAU : Dégradé pour indiquer le scroll (effet premium) */
+.scroll-arrow.left::before,
+.scroll-arrow.right::before {
+  content: "";
+  position: absolute;
+  top: -15px;
+  bottom: -15px;
+  width: 50px;
+  pointer-events: none;
+  transition: opacity 0.3s;
+  opacity: 0;
+}
+
+.scroll-arrow.left.active::before {
+  left: 100%;
+  background: linear-gradient(to right, var(--background-dark), transparent);
+  opacity: 1;
+}
+
+.scroll-arrow.right.active::before {
+  right: 100%;
+  background: linear-gradient(to left, var(--background-dark), transparent);
+  opacity: 1;
+}

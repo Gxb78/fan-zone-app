@@ -1,8 +1,6 @@
 // src/utils/helpers.js
 
-// Affiche "il y a 2min", etc. à partir d'un timestamp
 export function timeAgo(timestamp) {
-  // ... (cette partie ne change pas)
   const now = Date.now();
   const diff = now - timestamp;
   const minutes = Math.floor(diff / 60000);
@@ -15,108 +13,119 @@ export function timeAgo(timestamp) {
   return `il y a ${days}j`;
 }
 
-// ... (les autres helpers comme calculateHeatScore, etc. ne changent pas)
-export function calculateHeatScore(data) {
-  if (!data) return 0;
-  const votes = data.votes || {};
-  const comments = data.comments || [];
-  const lastActivity = data.lastActivity || 0;
+// 👇 NOUVEAU : Fonction spécifique pour calculer la chaleur d'un SONDAGE (POLL)
+// C'est cette fonction qui manquait.
+export function calculatePollHeatScore(poll) {
+  if (!poll) return 0;
+  const votes = poll.votes || {};
+  const comments = poll.seedComments || []; // Les commentaires sont dans seedComments
+  const lastActivity = poll.lastActivity || 0;
 
   const totalVotes = Object.values(votes).reduce((sum, val) => sum + val, 0);
-  const votesScore = Math.min(totalVotes * 5, 100);
+  const votesScore = Math.min(totalVotes / 50, 50); // Score basé sur le volume
 
   const commentsCount = comments.length;
-  const commentsScore = Math.min(commentsCount * 10, 100);
+  const commentsScore = Math.min(commentsCount * 5, 20);
 
   let diversityScore = 0;
-  if (totalVotes > 0) {
+  if (totalVotes > 10) {
     const percentages = Object.values(votes).map((v) => (v / totalVotes) * 100);
     const maxPercent = Math.max(...percentages);
-    diversityScore = 100 - maxPercent;
+    // Plus le vote est partagé, plus le score est élevé
+    diversityScore = (100 - maxPercent) * 0.3;
   }
 
   const now = Date.now();
-  const tenMinutes = 10 * 60 * 1000;
-  const recencyScore = now - lastActivity < tenMinutes ? 20 : 0;
+  const oneHour = 60 * 60 * 1000;
+  const recencyScore =
+    Math.max(0, (oneHour - (now - lastActivity)) / oneHour) * 10; // Bonus si activité récente
 
-  const heatScore =
-    votesScore * 0.3 +
-    commentsScore * 0.4 +
-    diversityScore * 0.2 +
-    recencyScore * 0.1;
-  return Math.round(heatScore);
+  const heatScore = votesScore + commentsScore + diversityScore + recencyScore;
+  return Math.min(Math.round(heatScore), 100);
 }
+
+// 👇 MODIFICATION : Renommage de ma fonction précédente pour plus de clarté
+export function calculateMatchHeat(match) {
+  if (!match || !match.usersEngaged) return 0;
+  const engagementScore = Math.min(match.usersEngaged / 100, 80);
+  const statusScore = match.status === "LIVE" ? 20 : 0;
+  let recencyScore = 0;
+  const matchDate = new Date(match.date).getTime();
+  const now = Date.now();
+  const diffHours = (matchDate - now) / (1000 * 60 * 60);
+  if (diffHours > 0 && diffHours < 3) {
+    recencyScore = 15;
+  }
+  const heatScore = engagementScore + statusScore + recencyScore;
+  return Math.min(Math.round(heatScore), 100);
+}
+
 export function getHeatEmoji(score) {
-  if (score >= 80) return "🔥🔥🔥 EN FEU";
-  if (score >= 60) return "🔥🔥 CHAUD";
-  if (score >= 40) return "🔥 DÉBAT";
-  return "❄️ FROID";
+  if (score >= 80) return "🔥🔥🔥";
+  if (score >= 60) return "🔥🔥";
+  if (score >= 30) return "🔥";
+  return "❄️";
 }
+
 export function getHeatClass(score) {
   if (score >= 70) return "hot";
   if (score >= 40) return "warm";
   return "cold";
 }
+
 export function isControversialOpinion(votes, chosenOption) {
   const totalVotes = Object.values(votes).reduce((sum, val) => sum + val, 0);
-  if (totalVotes === 0) return false;
+  if (totalVotes < 10) return false; // Ne pas marquer si peu de votes
   const optionVotes = votes[chosenOption] || 0;
   const percentage = (optionVotes / totalVotes) * 100;
-  return percentage < 30;
+  return percentage > 0 && percentage < 25; // Seuil ajusté
 }
 
-// ============== 👇 NOUVELLES FONCTIONS CORRIGÉES 👇 ==============
-
-// Affiche la date et l'heure en utilisant la timezone de Paris (beaucoup plus fiable !)
 export function formatMatchDate(dateString) {
   if (!dateString) return "Date inconnue";
   const date = new Date(dateString);
-
-  // ✅ La solution PRO de l'audit : on laisse le navigateur gérer la timezone.
+  if (isNaN(date.getTime())) {
+    return dateString;
+  }
   return new Intl.DateTimeFormat("fr-FR", {
-    dateStyle: "short",
-    timeStyle: "short",
+    weekday: "long",
+    hour: "2-digit",
+    minute: "2-digit",
     timeZone: "Europe/Paris",
   }).format(date);
 }
 
-// Affiche le score, la minute ou la date selon le statut (version blindée)
 export function getMatchTimeStatus(match) {
-  const { status, scoreA, scoreB, liveMinute, date } = match || {};
+  const { status, scoreA, scoreB, date } = match || {};
 
-  // Statut FINISHED
   if (status === "FINISHED") {
-    // On utilise '??' pour afficher "-" si le score est null ou undefined
-    const finalScore = `${scoreA ?? "-"} - ${scoreB ?? "-"}`;
-    return `Terminé : ${finalScore}`;
+    return `Terminé: ${scoreA ?? "-"} - ${scoreB ?? "-"}`;
   }
 
-  // Statut LIVE
-  if (status === "LIVE") {
-    const score = `${scoreA ?? "-"} - ${scoreB ?? "-"}`;
-    const minute = liveMinute || "LIVE";
-    return `${score} | ${minute}`;
+  const matchDate = new Date(date);
+  if (isNaN(matchDate.getTime())) {
+    return "À venir";
   }
 
-  // Statut SCHEDULED (programmé) ou n'importe quel autre cas
-  if (date) {
+  const now = new Date();
+  const diffMinutes = (now.getTime() - matchDate.getTime()) / (1000 * 60);
+
+  if (diffMinutes > 0 && diffMinutes < 120) {
+    return `${scoreA ?? "0"} - ${scoreB ?? "0"} | LIVE`;
+  }
+
+  if (diffMinutes < 0) {
     return formatMatchDate(date);
   }
 
-  // Fallback ultime si aucune date n'est fournie
-  return match?.time || "À venir";
+  return `Terminé: ${scoreA ?? "-"} - ${scoreB ?? "-"}`;
 }
-// Ajoute cette fonction à la fin de src/utils/helpers.js
 
 export function calculateCommentHeatScore(comment) {
   const likes = comment.likes || 0;
-
-  // On calcule le total des réactions emoji
   const totalReactions = Object.values(comment.reactions || {}).reduce(
     (sum, count) => sum + count,
     0
   );
-
-  // On donne plus de poids aux réactions qu'aux simples likes
   return likes + totalReactions * 2;
 }

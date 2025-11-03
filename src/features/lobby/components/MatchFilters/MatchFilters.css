@@ -1,11 +1,14 @@
-/* src/components/MatchFilters.css */
+/* src/features/lobby/components/MatchFilters/MatchFilters.css */
 
 .match-filters-container {
   display: flex;
-  flex-direction: column; /* ✅ On passe en colonne pour le format sidebar */
-  gap: 15px; /* On réduit un peu l'écart */
+  flex-direction: column;
+  gap: 15px;
   margin-bottom: 25px;
-  /* On enlève le fond, il prendra celui de la sidebar */
+  /* 👇 NOUVEAU : On ajoute un fond et un padding pour en faire une carte distincte */
+  background-color: var(--surface-dark);
+  padding: 15px;
+  border-radius: var(--border-radius);
 }
 
 .filter-group {
@@ -16,8 +19,8 @@
 
 .filter-group label {
   font-size: 0.9em;
-  font-weight: 600;
-  color: var(--text-secondary);
+  font-weight: 700;
+  color: var(--text-primary); /* Couleur plus visible */
   padding-left: 5px;
 }
 

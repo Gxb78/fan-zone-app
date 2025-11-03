@@ -5,10 +5,11 @@ import FeaturedMatch from "@/features/lobby/components/FeaturedMatch/FeaturedMat
 import HotPolls from "@/features/lobby/components/HotPolls/HotPolls";
 import LiveCommentaryFeed from "@/features/lobby/components/LiveCommentaryFeed/LiveCommentaryFeed";
 import SportSelector from "@/features/lobby/components/SportSelector/SportSelector";
+import LeagueSelector from "@/features/lobby/components/LeagueSelector/LeagueSelector";
 import MatchFilters from "@/features/lobby/components/MatchFilters/MatchFilters";
 import {
   getMatchTimeStatus,
-  calculateHeatScore,
+  calculatePollHeatScore,
   getHeatEmoji,
   getHeatClass,
 } from "@/utils/helpers";
@@ -35,48 +36,33 @@ const Lobby = () => {
       return leagueMatch && statusMatch;
     });
 
-    // 👇 NOUVELLE LOGIQUE DE TRI AMÉLIORÉE 👇
     const statusOrder = { LIVE: 1, SCHEDULED: 2, FINISHED: 3 };
-
     const sortedMatches = [...filteredMatches].sort((a, b) => {
-      // 1. Tri par statut (LIVE > SCHEDULED > FINISHED)
       const orderA = statusOrder[a.status] || 99;
       const orderB = statusOrder[b.status] || 99;
       if (orderA !== orderB) return orderA - orderB;
-
-      // 2. Pour les matchs À VENIR, tri par Hype Score (décroissant)
       if (a.status === "SCHEDULED") {
         return (b.usersEngaged || 0) - (a.usersEngaged || 0);
       }
-
-      // 3. Pour les matchs TERMINÉS, tri par date (du plus récent au plus ancien)
       if (a.status === "FINISHED") {
         return new Date(b.date).getTime() - new Date(a.date).getTime();
       }
-
-      return 0; // Pour les autres cas (ex: deux matchs LIVE)
+      return 0;
     });
 
-    // Le match à la une est le premier de la liste triée (le plus pertinent)
     const featMatch = sortedMatches[0] || null;
-
-    // On retire le match à la une de la liste des "autres"
     const otherMatchesBase = featMatch ? sortedMatches.slice(1) : [];
-
-    // On re-trie les autres matchs par date pour un affichage chronologique cohérent
     const sortedOthers = otherMatchesBase.sort((a, b) => {
       const orderA = statusOrder[a.status] || 99;
       const orderB = statusOrder[b.status] || 99;
       if (orderA !== orderB) return orderA - orderB;
-
       if (a.status === "FINISHED") {
         return new Date(b.date).getTime() - new Date(a.date).getTime();
       }
-
       return new Date(a.date).getTime() - new Date(b.date).getTime();
     });
 
-    const leagues = [...new Set(allMatches.map((m) => m.competition))];
+    const leagues = [...new Set(allMatches.map((m) => m.competition))].sort();
 
     return {
       featuredMatch: featMatch,
@@ -86,7 +72,7 @@ const Lobby = () => {
   }, [allMatches, selectedLeague, selectedStatus]);
 
   if (loading) {
-    return <div className="loading">Chargement des matchs européens...</div>;
+    return <div className="loading">Chargement des matchs...</div>;
   }
 
   if (error && allMatches.length === 0) {
@@ -102,10 +88,21 @@ const Lobby = () => {
         />
       </div>
       <div className="lobby-main-content">
-        <SportSelector
-          selectedSport={selectedSport}
-          onSelectSport={setSelectedSport}
-        />
+        <div className="selectors-container">
+          <SportSelector
+            selectedSport={selectedSport}
+            onSelectSport={setSelectedSport}
+          />
+          <LeagueSelector
+            leagues={availableLeagues}
+            selectedLeague={selectedLeague}
+            onLeagueChange={setSelectedLeague}
+            isVisible={
+              selectedSport === "football" && availableLeagues.length > 0
+            }
+          />
+        </div>
+
         {featuredMatch ? (
           <>
             <FeaturedMatch
@@ -118,7 +115,7 @@ const Lobby = () => {
             <div className="match-list-container">
               {otherMatches.map((match) => {
                 const pollScores = (match.polls || []).map((poll) =>
-                  calculateHeatScore(poll)
+                  calculatePollHeatScore(poll)
                 );
                 const averageHeatScore =
                   pollScores.length > 0
@@ -177,9 +174,6 @@ const Lobby = () => {
       </div>
       <div className="lobby-sidebar-right">
         <MatchFilters
-          leagues={availableLeagues}
-          selectedLeague={selectedLeague}
-          onLeagueChange={setSelectedLeague}
           selectedStatus={selectedStatus}
           onStatusChange={setSelectedStatus}
         />

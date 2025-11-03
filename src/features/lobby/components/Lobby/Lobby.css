@@ -2,7 +2,6 @@
 
 .lobby-final-layout {
   display: grid;
-  /* ✅ On revient à notre layout que tu aimais */
   grid-template-columns: 320px 1fr 320px;
   gap: 25px;
   align-items: flex-start;
@@ -16,15 +15,23 @@
 .lobby-sidebar-right {
   position: sticky;
   top: 20px;
-  max-height: calc(100vh - 120px); /* Un peu plus d'espace vertical */
+  max-height: calc(100vh - 120px);
   overflow-y: auto;
-  /* On cache la scrollbar pour un look plus clean */
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 .lobby-sidebar-left::-webkit-scrollbar,
 .lobby-sidebar-right::-webkit-scrollbar {
-  display: none; /* Chrome, Safari and Opera */
+  display: none;
+}
+
+/* 👇 NOUVEAU : Wrapper pour les sélecteurs sport/ligue */
+.selectors-container {
+  background-color: var(--surface-dark);
+  border-radius: var(--border-radius);
+  margin-bottom: 25px;
+  /* L'ombre donne un effet de profondeur, comme sur Revolut */
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
 @media (max-width: 1200px) {

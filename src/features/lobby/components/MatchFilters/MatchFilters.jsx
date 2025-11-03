@@ -1,34 +1,11 @@
-// src/components/MatchFilters.jsx
 import React from "react";
 import "./MatchFilters.css";
 
-const MatchFilters = ({
-  leagues,
-  selectedLeague,
-  onLeagueChange,
-  selectedStatus,
-  onStatusChange,
-}) => {
+const MatchFilters = ({ selectedStatus, onStatusChange }) => {
   return (
     <div className="match-filters-container">
       <div className="filter-group">
-        <label htmlFor="league-filter">Championnat</label>
-        <select
-          id="league-filter"
-          value={selectedLeague}
-          onChange={(e) => onLeagueChange(e.target.value)}
-        >
-          <option value="all">Tous les championnats</option>
-          {leagues.map((league) => (
-            <option key={league} value={league}>
-              {league}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div className="filter-group">
-        <label htmlFor="status-filter">Statut</label>
+        <label htmlFor="status-filter">Statut du Match</label>
         <select
           id="status-filter"
           value={selectedStatus}
@@ -36,12 +13,13 @@ const MatchFilters = ({
         >
           <option value="all">Tous</option>
           <option value="SCHEDULED">À venir</option>
+          <option value="LIVE">En direct</option>
           <option value="FINISHED">Terminés</option>
-          {/* On prépare le terrain pour le futur "Live" */}
         </select>
       </div>
     </div>
   );
 };
 
+// 👇 VERIFICATION CRUCIALE : Le composant est bien exporté par défaut.
 export default MatchFilters;
